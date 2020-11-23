@@ -212,7 +212,7 @@ namespace BT
 				menu.AddSeparator ("");
 				AddMenuItem (menu, "Composite/Random Selector", "randomSelectorNode");
 				AddMenuItem (menu, "Composite/Selector", "selectorNode");
-				AddMenuItem (menu, "Composite/Sequence", "SequenceNode");
+				AddMenuItem (menu, "Composite/Sequence", "sequenceNode");
 				AddMenuItem (menu, "Composite/Parallel", "parallelNode");
 				menu.AddSeparator ("");
 				AddMenuItem (menu, "Decorator/Failure", "failureNode");
@@ -222,7 +222,7 @@ namespace BT
 				AddMenuItem (menu, "Action/Wait", "waitNode");
 				AddMenuItem (menu, "Action/Weight", "weightNode");
 				AddMenuItem (menu, "Action/MoveToPosition", "moveToPositionNode");
-				AddMenuItem (menu, "Action/RandomPosition", "randomPositionNode");
+				//AddMenuItem (menu, "Action/RandomPosition", "randomPositionNode");
 				AddMenuItem (menu, "Action/RunAnimator", "runAnimatorNode");
 			}
 

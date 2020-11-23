@@ -46,14 +46,21 @@ namespace BT
 				mBehaviourTree = new BehaviourTree (DEFAULE_BT_NAME);
 			}
 
-			if (GUILayout.Button ("保存行为树")) {
-				BTHelper.SaveBTData (mBehaviourTree);
-			}
-
+			GUILayout.Space (SPACE_VALUE);
+			
 			EditorGUIUtility.labelWidth = 40;
 			if (mAllShowJsons != null && mAllShowJsons.Length > 0)
 				mCurSelectJson = EditorGUILayout.Popup ("行为树:", mCurSelectJson, mAllShowJsons);
 			EditorGUIUtility.labelWidth = 60;
+
+			EditorGUILayout.LabelField ("行为树数据");
+			if (mBehaviourTree != null) {
+				mBehaviourTree.Name = EditorGUILayout.TextField ("行为树名:", mBehaviourTree.Name);
+			}
+
+			if (GUILayout.Button ("保存行为树")) {
+				BTHelper.SaveBTData (mBehaviourTree);
+			}
 
 			GUILayout.Space (SPACE_VALUE);
 

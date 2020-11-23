@@ -146,7 +146,7 @@ namespace BT
 		static public string nodePath {
 			get {
 				if (string.IsNullOrEmpty (_nodePath)) {
-					_nodePath = Path.Combine (clientPath, "LocalFile/nodes");
+					_nodePath = Path.Combine (clientPath, "LocalFile/lua");
 					_nodePath = _nodePath.Replace ("\\", "/");
 				}
 				return _nodePath;
@@ -259,13 +259,12 @@ namespace BT
 			foreach (var fullPath in allFiles) {
 				var sortPath = fullPath.Replace ("\\", "/");
 				sortPath = sortPath.Replace (nodePath, "");
-				if (sortPath.Contains ("/common/") ||
-				    sortPath.Contains ("/__init.lua") ||
-				    sortPath.Contains ("/behaviorManager.lua"))
+				if (sortPath.Contains ("/common/"))
 					continue;
 				var fileName = Path.GetFileNameWithoutExtension (fullPath);
 				string type = sortPath.Substring (1, sortPath.LastIndexOf ('/') - 1);
 				mNodeTypeDict.Add (fileName, type);
+				//Debug.LogFormat ("加载lua节点:{0}", fileName);
 			}
 		}
 
