@@ -10,12 +10,9 @@ waitNode = simple_class(baseNode)
 
 local _random = math.random
 
-local _waitTimeMin = 2
-local _waitTimeMax = 5
-
 function waitNode:start()
 	self.deltaTime = 0
-	self.waitTime = _random(_waitTimeMin, _waitTimeMax)
+	self.waitTime = _random(tonumber(self.data.waitMin), tonumber(self.data.waitMax))
 end
 
 function waitNode:update()

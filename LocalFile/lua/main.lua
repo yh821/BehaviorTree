@@ -1,17 +1,7 @@
 require 'common.simple_class'
 require 'common.baseNode'
 require 'common.behaviorTree'
-
-require 'composites.parallelNode'
-require 'composites.randomSelectorNode'
-require 'composites.selectorNode'
-require 'composites.sequenceNode'
-
 require 'behaviorManager'
-
-require 'actions.waitNode'
-
-
 
 --local root = rootNode:new()
 --local sequence = sequenceNode:new()

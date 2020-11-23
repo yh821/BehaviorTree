@@ -15,7 +15,7 @@ namespace BT
 		public Rect NodeRect {
 			get {
 				Rect ret = RealRect;
-				ret.position += BTEditorProperty.Instance.Position;
+				ret.position += BTEditorWindow.window.Position;
 				return ret;
 			}
 			set { RealRect = value; }
@@ -26,8 +26,8 @@ namespace BT
 		/// </summary>
 		public Rect DownPointRect {
 			get {
-				return new Rect (NodeRect.center.x - BTEditorConst.LINE_POINT_LENGTH / 2, NodeRect.yMax,
-					BTEditorConst.LINE_POINT_LENGTH, BTEditorConst.LINE_POINT_LENGTH);
+				return new Rect (NodeRect.center.x - BTConst.LINE_POINT_LENGTH / 2, NodeRect.yMax,
+					BTConst.LINE_POINT_LENGTH, BTConst.LINE_POINT_LENGTH);
 			}
 		}
 
@@ -36,9 +36,9 @@ namespace BT
 		/// </summary>
 		public Rect UpPointRect {
 			get {
-				return new Rect (NodeRect.center.x - BTEditorConst.LINE_POINT_LENGTH / 2,
-					NodeRect.yMin - BTEditorConst.LINE_POINT_LENGTH,
-					BTEditorConst.LINE_POINT_LENGTH, BTEditorConst.LINE_POINT_LENGTH);
+				return new Rect (NodeRect.center.x - BTConst.LINE_POINT_LENGTH / 2,
+					NodeRect.yMin - BTConst.LINE_POINT_LENGTH,
+					BTConst.LINE_POINT_LENGTH, BTConst.LINE_POINT_LENGTH);
 			}
 		}
 
@@ -49,7 +49,7 @@ namespace BT
 			get {
 				return new Rect (NodeRect.x + 5,
 					NodeRect.y + 5,
-					BTEditorConst.LINE_POINT_LENGTH, BTEditorConst.LINE_POINT_LENGTH);
+					BTConst.LINE_POINT_LENGTH, BTConst.LINE_POINT_LENGTH);
 			}
 		}
 	}

@@ -1,90 +1,46 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
-using System.Linq;
+using UnityEditor;
 
 namespace BT
 {
-	public class BTEditorProperty
+	public partial class BTEditorWindow
 	{
-		#region 单例
-
-		private static BTEditorProperty _instance = null;
-
-		public static BTEditorProperty Instance {
-			get { return _instance; }
-			set { _instance = value; }
+		[MenuItem ("Tools/BehaviorEditor")]
+		static void ShowWindow ()
+		{
+			var win = GetWindowWithRect<BTEditorWindow> (
+				          new Rect (0, 0, BTConst.WINDOWS_WIDTH, BTConst.WINDOWS_HEIGHT), true, "编辑行为树");
+			win.Initialize ();
 		}
 
-		#endregion
+		private static BTEditorWindow mWindow = null;
+
+		public static BTEditorWindow window {
+			get { 
+				if (mWindow == null) {
+					mWindow = GetWindowWithRect<BTEditorWindow> (new Rect (0, 0, BTConst.WINDOWS_WIDTH, BTConst.WINDOWS_HEIGHT), false, "行为树编辑器");
+				}
+				return mWindow; 
+			}
+		}
 
 		/// <summary>
 		/// 当前移动坐标 鼠标拖拽背景偏移
 		/// </summary>
-		public Vector2 Position { get; set; }
+		public Vector2 Position { get { return mPosition; } set { mPosition = value; } }
 
-		/// <summary>
-		/// 当前选中的节点
-		/// </summary>
-		private Dictionary<string,BTNode> mSelectNodeDic;
-
-		public int SelectNodeCount {
-			get { return mSelectNodeDic.Count; }
-		}
-
-		public BTNode DefaultNode {
-			get { return mSelectNodeDic.First ().Value; }
-		}
+		private Vector2 mPosition = Vector2.zero;
 
 		public Event Event {
-			get {
+			get { 
 				if (Event.current == null) {
 					Event evt = new Event { type = EventType.Ignore };
 					return evt;
 				}
-
 				return Event.current;
 			}
 		}
 
-		public BTEditorProperty ()
-		{
-			Position = Vector2.zero;
-			mSelectNodeDic = new Dictionary<string, BTNode> ();
-		}
-
-		public bool GetIsSelectNode (BTNode node)
-		{
-			return mSelectNodeDic.ContainsKey (node.Guid);
-		}
-
-		public void AddSelectNode (string id, BTNode node)
-		{
-			if (mSelectNodeDic.ContainsKey (id)) {
-				return;
-			}   
-			mSelectNodeDic.Add (id, node);
-		}
-
-		public void AddSelectNode (BTNode node)
-		{
-			if (mSelectNodeDic.ContainsKey (node.Guid)) {
-				return;
-			}   
-			mSelectNodeDic.Add (node.Guid, node);
-		}
-
-		public void RemoveSelectNode (string id)
-		{
-			if (mSelectNodeDic.ContainsKey (id)) {
-				mSelectNodeDic.Remove (id);
-			}
-		}
-
-		public void RemoveSelectNode (BTNode node)
-		{
-			if (mSelectNodeDic.ContainsKey (node.Guid)) {
-				mSelectNodeDic.Remove (node.Guid);
-			}
-		}
+		public BTNode CurSelectNode { get; set; }
 	}
 }

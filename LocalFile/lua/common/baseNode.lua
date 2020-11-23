@@ -18,8 +18,9 @@ local _id = 0
 local _openLog = true
 local _format = string.format
 
-function baseNode:__init(parent, owner)
+function baseNode:__init(parent, owner, data)
 	self.owner = owner
+	self.data = data
 	self:reset()
 	self:awake()
 	_id = _id + 1
@@ -30,6 +31,7 @@ function baseNode:awake()
 end
 
 function baseNode:start()
+	self.state = nodeState.success
 end
 
 function baseNode:tick()
@@ -41,7 +43,7 @@ function baseNode:tick()
 end
 
 function baseNode:update()
-	return nodeState.success
+	return self.state
 end
 
 function baseNode:reset()

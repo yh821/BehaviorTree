@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using System.Linq;
 
 namespace BT
 {
@@ -10,28 +10,25 @@ namespace BT
 		/// <summary>
 		/// 编辑化节点
 		/// </summary>
-		public EditorNode Node;
+		public BTNodeType Type { get; }
+
 		/// <summary>
 		/// 唯一识别符
 		/// </summary>
-		public string Guid;
+		public string Guid { get; }
+
 		/// <summary>
 		/// 节点名
 		/// </summary>
-		public string Label;
+		public string Label { get; }
 
-		private BehaviourTree mOwner;
+		public string NodeName { get; }
 
-		public BehaviourTree Owner {
-			get{ return mOwner; }
-		}
+		public BTNodeData Data { get; }
 
-		/// <summary>
-		/// 节点状态 . 错误类型
-		/// </summary>
-		public ErrorType ErrorType {
-			get { return Node.GetIsVaild (); }
-		}
+		public BehaviourTree Owner { get; }
+
+		public BTNode Parent { get; }
 
 		/// <summary>
 		/// 节点Rect定义
@@ -50,33 +47,6 @@ namespace BT
 		}
 
 		/// <summary>
-		/// 节点类型
-		/// </summary>
-		public Type NodeType {
-			get { return Node.GetType (); }
-		}
-
-		/// <summary>
-		/// 节点枚举类型
-		/// </summary>
-		public EditorNodeEnum NodeEnum {
-			get { return Node.NodeEnum; }
-		}
-
-		/// <summary>
-		/// 默认 取第一个子节点
-		/// </summary>
-		public EditorNode DefaultNode {
-			get {
-				if (IsHaveChild) {
-					return ChildNodeList [0].Node;
-				}
-
-				return null;
-			}
-		}
-
-		/// <summary>
 		/// 实际Rect范围
 		/// </summary>
 		public Rect RealRect {
@@ -89,7 +59,7 @@ namespace BT
 		public Rect NodeRect {
 			get {
 				Rect ret = RealRect;
-				ret.position += BTEditorProperty.Instance.Position;
+				ret.position += BTEditorWindow.window.Position;
 				return ret;
 			}
 			set { BTNodeGraph.RealRect = value; }
@@ -98,9 +68,7 @@ namespace BT
 		/// <summary>
 		/// 是否是根节点
 		/// </summary>
-		public bool IsRoot {
-			get{ return Label == "Root"; }
-		}
+		public bool IsRoot { get; }
 
 		/// <summary>
 		/// 是否可以拖拽
@@ -114,21 +82,19 @@ namespace BT
 		private Vector3 startPos;
 		private Vector3 endPos;
 
-		public BTNode (BehaviourTree owner, string label, EditorNode node, Rect rect)
+		public BTNode (BehaviourTree owner, BTNode parent, BTNodeData data)
 		{
-			mOwner = owner;
-			BTNodeGraph = new BTNodeGraph ();  
-			Label = label;
-			Node = node;
-			BTNodeGraph.RealRect = rect;
-			InitNode ();
-		}
-
-		private void InitNode ()
-		{
+			Owner = owner;
+			Parent = parent;
+			Data = data;
+			BTNodeGraph = new BTNodeGraph ();
+			NodeName = data.name;
+			IsRoot = NodeName == BTConst.RootName;
+			Label = NodeName.Replace ("Node", "");
+			BTNodeGraph.RealRect = new Rect (data.posX, data.posY, BTConst.Default_Width, BTConst.Default_Height);
 			ChildNodeList = new List<BTNode> ();
-			Guid = BTUtils.GenerateUniqueStringID ();
-			Node.SetBelongNode (this);
+			Guid = BTHelper.GenerateUniqueStringId ();
+			Type = BTHelper.CreateNodeType (this);
 		}
 
 		public void Update (Rect canvas)
@@ -139,8 +105,15 @@ namespace BT
 
 		private void DrawNode ()
 		{
-			GUIStyle style = BTEditorProperty.Instance.GetIsSelectNode (this) ? BTNodeStyle.SelectStyle : BTNodeStyle.NormalStyle;
-			EditorGUI.LabelField (NodeRect, Label, style);
+			GUIStyle style = BTEditorWindow.window.CurSelectNode == this ? Type.SelectStyle : Type.NormalStyle;
+			string showLabel;
+			if (Data.data != null && Data.data.Count > 0) {
+				var first = Data.data.First ();
+				showLabel = string.Format ("{0}\n{1}:{2}", Label, first.Key, first.Value);
+			} else
+				showLabel = Label;
+
+			EditorGUI.LabelField (NodeRect, showLabel, style);
 
 			if (IsHaveChild) {
 				startPos = BTNodeGraph.DownPointRect.center;
@@ -148,11 +121,14 @@ namespace BT
 					endPos = node.BTNodeGraph.UpPointRect.center;
 					float center = startPos.x + (endPos.x - startPos.x) / 2;
 					Handles.DrawBezier (startPos, endPos, new Vector3 (center, startPos.y), 
-						new Vector3 (center, endPos.y), Color.white, Texture2D.whiteTexture, BTEditorConst.BEZIER_WIDTH);
+						new Vector3 (center, endPos.y), Color.white, Texture2D.whiteTexture, BTConst.BEZIER_WIDTH);
 					GUI.DrawTexture (node.BTNodeGraph.UpPointRect, BTNodeStyle.LinePoint);
 				}
 				GUI.DrawTexture (BTNodeGraph.DownPointRect, BTNodeStyle.LinePoint);
 			}
+
+			if (Type.IsValid == ErrorType.Error)
+				GUI.DrawTexture (BTNodeGraph.ErrorRect, BTNodeStyle.ErrorPoint);
 		}
 
 		/// <summary>
@@ -160,30 +136,32 @@ namespace BT
 		/// </summary>
 		private void DealHandles (Rect canvas)
 		{
-			Event currentEvent = BTEditorProperty.Instance.Event;
+			var window = BTEditorWindow.window;
+			Event currentEvent = window.Event;
 			if (currentEvent.isMouse && currentEvent.type == EventType.MouseDrag && currentEvent.button == 0) {
 				//拖拽
 				if (NodeRect.Contains (currentEvent.mousePosition) && mCanDragMove) {
 					mIsDragging = true;
 					currentEvent.Use ();
-					BTEditorProperty.Instance.AddSelectNode (Guid, this);
-					BTNodeGraph.RealRect.position += currentEvent.delta;
+					window.CurSelectNode = this;
+					WalkChildPos (this, currentEvent.delta);
 				}
 			} else if (currentEvent.isMouse && currentEvent.type == EventType.MouseDown && currentEvent.button == 0) {
 				//点击
 				if (NodeRect.Contains (currentEvent.mousePosition)) {
-					BTEditorProperty.Instance.AddSelectNode (this);
+					window.CurSelectNode = this;
 					mCanDragMove = true;
+					currentEvent.Use ();
 				} else {
-					if (currentEvent.mousePosition.x <= canvas.width - BTEditorConst.LEFT_INSPECT_WIDTH) {
-						BTEditorProperty.Instance.RemoveSelectNode (this);
+					if (currentEvent.mousePosition.x <= canvas.width - BTConst.LEFT_INSPECT_WIDTH) {
+						window.CurSelectNode = null;
 					}
 				}
 			} else if (currentEvent.isMouse && currentEvent.type == EventType.MouseUp && currentEvent.button == 0) {
 				//松开鼠标
 				if (mIsDragging) {
-					currentEvent.Use ();
 					mIsDragging = false;
+					currentEvent.Use ();
 				}
 				mCanDragMove = false;
 			} else if (currentEvent.type == EventType.ContextClick) {
@@ -194,34 +172,60 @@ namespace BT
 			}
 		}
 
-		public void Callback (object obj)
+		private void WalkChildPos (BTNode parent, Vector2 delta)
 		{
-			string name = obj.ToString ();
-			switch (name) {
-			case "Selector":
-			case "Sequence":
-				AddChild (Owner, name, new Composite ());
-				break;
+			parent.BTNodeGraph.RealRect.position += delta;
+			if (parent.IsHaveChild) {
+				foreach (var node in parent.ChildNodeList) {
+					WalkChildPos (node, delta);
+				}
 			}
 		}
 
-		void AddChild (BehaviourTree owner, string nodeName, EditorNode node)
+		public void Callback (object obj)
 		{
-			var pos = BTNodeGraph.NodeRect.position;
-			var rect = new Rect (new Vector2 (pos.x, pos.y + BTEditorConst.Default_Distance), BTNodeGraph.NodeRect.size);
-			var child = new BTNode (owner, nodeName, node, rect);
-			owner.AddNode (child);
-			ChildNodeList.Add (child);
+			string name = obj.ToString ();
+			if (name == "Delete")
+				BTHelper.RemoveChild (Owner, Parent, this);
+			else {
+				var node = BTHelper.AddChild (Owner, this, name);
+				var data = node.Data;
+				switch (name) {
+				case "waitNode":
+					data.AddData ("waitMin", "2");
+					data.AddData ("waitMax", "5");
+					break;
+				case "weightNode":
+					data.AddData ("weight", "10");
+					break;
+				}
+			}
 		}
 
 		void ShowMenu ()
 		{
 			GenericMenu menu = new GenericMenu ();
-			AddMenuItem (menu, "Composite/Selector", "Selector");
-			AddMenuItem (menu, "Composite/Sequence", "Sequence");
-			menu.AddSeparator ("");
-			AddMenuItem (menu, "Action/Wait", "Wait");
-			AddMenuItem (menu, "Action/RandomPoint", "RandomPoint");
+			if (!IsRoot && !IsHaveChild)
+				AddMenuItem (menu, "Delete Node", "Delete");
+
+			if (Type.Type != BTNodeEnum.Task && ChildNodeList.Count < Type.CanAddNodeCount) {
+				menu.AddSeparator ("");
+				AddMenuItem (menu, "Composite/Random Selector", "randomSelectorNode");
+				AddMenuItem (menu, "Composite/Selector", "selectorNode");
+				AddMenuItem (menu, "Composite/Sequence", "SequenceNode");
+				AddMenuItem (menu, "Composite/Parallel", "parallelNode");
+				menu.AddSeparator ("");
+				AddMenuItem (menu, "Decorator/Failure", "failureNode");
+				AddMenuItem (menu, "Decorator/Inverter", "inverterNode");
+				AddMenuItem (menu, "Decorator/Success", "successNode");
+				menu.AddSeparator ("");
+				AddMenuItem (menu, "Action/Wait", "waitNode");
+				AddMenuItem (menu, "Action/Weight", "weightNode");
+				AddMenuItem (menu, "Action/MoveToPosition", "moveToPositionNode");
+				AddMenuItem (menu, "Action/RandomPosition", "randomPositionNode");
+				AddMenuItem (menu, "Action/RunAnimator", "runAnimatorNode");
+			}
+
 			menu.ShowAsContext ();
 		}
 

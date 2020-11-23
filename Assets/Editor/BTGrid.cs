@@ -9,7 +9,7 @@ namespace BT
 
 		public BTGrid ()
 		{
-			mBackground = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BT/EditorGUI/background.png");
+			mBackground = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/background.png");
 		}
 
 		/// <summary>
@@ -19,13 +19,13 @@ namespace BT
 		public void DrawGrid (Vector2 windowSize)
 		{
 			Handles ();
-			BTEditorProperty editor = BTEditorProperty.Instance;
-			Rect position = new Rect (0, 0, windowSize.x, windowSize.y);
-			Rect texCoords = new Rect (-editor.Position.x / mBackground.width,
-				                (1.0f - windowSize.y / mBackground.height) + editor.Position.y / mBackground.height,
-				                windowSize.x / mBackground.width,
-				                windowSize.y / mBackground.height);
-			GUI.DrawTextureWithTexCoords (position, mBackground, texCoords);
+			var position = BTEditorWindow.window.Position;
+			Rect rect = new Rect (0, 0, windowSize.x, windowSize.y);
+			Rect texCoords = new Rect (-position.x / mBackground.width,
+				                 (1.0f - windowSize.y / mBackground.height) + position.y / mBackground.height,
+				                 windowSize.x / mBackground.width,
+				                 windowSize.y / mBackground.height);
+			GUI.DrawTextureWithTexCoords (rect, mBackground, texCoords);
 		}
 
 		/// <summary>
@@ -33,10 +33,10 @@ namespace BT
 		/// </summary>
 		public void Handles ()
 		{
-			Event currentEvent = BTEditorProperty.Instance.Event;
+			Event currentEvent = BTEditorWindow.window.Event;
 			if (currentEvent.isMouse && currentEvent.button == 2 && currentEvent.type == EventType.MouseDrag) {
 				currentEvent.Use ();
-				BTEditorProperty.Instance.Position += currentEvent.delta;                
+				BTEditorWindow.window.Position += currentEvent.delta;                
 			}
 		}
 	}

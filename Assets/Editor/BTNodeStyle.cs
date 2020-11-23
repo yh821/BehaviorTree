@@ -5,12 +5,36 @@ namespace BT
 {
 	public static class BTNodeStyle
 	{
-		public static GUIStyle NormalStyle {
+		public static GUIStyle RootStyle {
+			get { return "flow node 0"; }
+		}
+
+		public static GUIStyle SelectRootStyle {
+			get { return "flow node 0 on"; }
+		}
+
+		public static GUIStyle DecoratorStyle {
+			get { return "flow node 2"; }
+		}
+
+		public static GUIStyle SelectDecoratorStyle {
+			get { return "flow node 2 on"; }
+		}
+
+		public static GUIStyle CompositeStyle {
 			get { return "flow node 1"; }
 		}
 
-		public static GUIStyle SelectStyle {
+		public static GUIStyle SelectCompositeStyle {
 			get { return "flow node 1 on"; }
+		}
+
+		public static GUIStyle TaskStyle {
+			get { return "flow node 3"; }
+		}
+
+		public static GUIStyle SelectTaskStyle {
+			get { return "flow node 3 on"; }
 		}
 
 		private static Texture _LineBoxTex;
@@ -18,7 +42,7 @@ namespace BT
 		public static Texture LineBoxTex {
 			get {
 				if (_LineBoxTex == null) {
-					_LineBoxTex = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BT/EditorGUI/Icon_ModalBox_Cross.png");
+					_LineBoxTex = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/Icon_ModalBox_Cross.png");
 				}
 
 				return _LineBoxTex;
@@ -30,7 +54,7 @@ namespace BT
 		public static Texture LinePoint {
 			get {
 				if (_LinePoint == null) {
-					_LinePoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BT/EditorGUI/Minimap_Pin_Green.png");
+					_LinePoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/Minimap_Pin_Green.png");
 				}
 
 				return _LinePoint;
@@ -42,7 +66,7 @@ namespace BT
 		public static Texture ErrorPoint {
 			get {
 				if (_ErrorPoint == null) {
-					_ErrorPoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BT/EditorGUI/Minimap_Pin_Red.png");
+					_ErrorPoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/Minimap_Pin_Red.png");
 				}
 
 				return _ErrorPoint;
@@ -54,7 +78,7 @@ namespace BT
 		public static Texture WarnPoint {
 			get {
 				if (_WarnPoint == null) {
-					_WarnPoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BT/EditorGUI/Minimap_Pin_Yellow.png");
+					_WarnPoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/Minimap_Pin_Yellow.png");
 				}
 
 				return _WarnPoint;

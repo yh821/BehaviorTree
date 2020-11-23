@@ -8,24 +8,26 @@ namespace BT
 	{
 		public Dictionary<string, BTNode> BTNodeDic;
 
-		/// <summary>
-		/// 根节点
-		/// </summary>
-		public BTNode root;
+		public string Name { get; set; }
+
+		public BTNode Root { get; }
 
 		public BehaviourTree ()
 		{
 			BTNodeDic = new Dictionary<string, BTNode> ();     
 		}
 
-		public void CreateRoot ()
+		public BehaviourTree (string name, BTNodeData data = null)
 		{
-			//取一个中间的位子
-			root = new BTNode (this, "Root", new Decorator (), 
-				new Rect ((BTEditorConst.WINDOWS_WIDTH - BTEditorConst.LEFT_INSPECT_WIDTH) / 2 - 
-					BTEditorConst.Default_Width / 2, 
-					50, BTEditorConst.Default_Width, BTEditorConst.Default_Height));
-			AddNode (root);
+			Name = name;
+			BTNodeDic = new Dictionary<string, BTNode> ();
+			if (data == null) {
+				data = new BTNodeData (BTConst.RootName, null, 
+					(BTConst.WINDOWS_WIDTH - BTConst.LEFT_INSPECT_WIDTH) / 2 - BTConst.Default_Width / 2, 50);
+				data.AddData ("restartOnComplete", "1");
+			}
+			Root = new BTNode (this, null, data);
+			AddNode (Root);
 		}
 
 		public void Update (Rect canvas)

@@ -11,12 +11,8 @@ behaviorTree = simple_class(baseNode)
 function behaviorTree:awake()
 	self.child = nil
 	self.blackBoard = nil
-	self.restartOnComplete = nil
-end
-
-function behaviorTree:bind(guid, data)
-	self.guid = guid
-	self.restartOnComplete = data.restartOnComplete
+	self.guid = self.data.guid
+	self.restartOnComplete = tonumber(self.data.restartOnComplete) == 1
 end
 
 function behaviorTree:addChild(node)
