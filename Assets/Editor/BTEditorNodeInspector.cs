@@ -58,9 +58,11 @@ namespace BT
 				mBehaviourTree.Name = EditorGUILayout.TextField ("行为树名:", mBehaviourTree.Name);
 			}
 
+			GUI.color = Color.green;
 			if (GUILayout.Button ("保存行为树")) {
 				BTHelper.SaveBTData (mBehaviourTree);
 			}
+			GUI.color = Color.white;
 
 			GUILayout.Space (SPACE_VALUE);
 
