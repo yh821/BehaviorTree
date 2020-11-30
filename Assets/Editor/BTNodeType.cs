@@ -58,7 +58,7 @@ namespace BT
 		}
 
 		public override int CanAddNodeCount {
-			get { return BTConst.Normal_Decorator_CanAddNode; }
+			get { return BTConst.NormalDecoratorCanAddNode; }
 		}
 
 		public override GUIStyle NormalStyle {
@@ -100,7 +100,7 @@ namespace BT
 		}
 
 		public override int CanAddNodeCount {
-			get { return BTConst.Normal_Composite_CanAddNode; }
+			get { return BTConst.NormalCompositeCanAddNode; }
 		}
 
 		public override GUIStyle NormalStyle {
@@ -127,7 +127,7 @@ namespace BT
 		}
 
 		public override int CanAddNodeCount {
-			get { return BTConst.Normal_Task_CanAddNode; }
+			get { return BTConst.NormalTaskCanAddNode; }
 		}
 
 		public override GUIStyle NormalStyle {

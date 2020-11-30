@@ -18,7 +18,6 @@ namespace BT
 				ret.position += BTEditorWindow.window.Position;
 				return ret;
 			}
-			set { RealRect = value; }
 		}
 
 		/// <summary>

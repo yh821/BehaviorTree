@@ -23,7 +23,7 @@ namespace BT
 			BTNodeDic = new Dictionary<string, BTNode> ();
 			if (data == null) {
 				data = new BTNodeData (BTConst.RootName, null, 
-					(BTConst.WINDOWS_WIDTH - BTConst.LEFT_INSPECT_WIDTH) / 2 - BTConst.Default_Width / 2, 50);
+					(BTConst.WINDOWS_WIDTH - BTConst.LEFT_INSPECT_WIDTH) / 2 - BTConst.DefaultWidth / 2, 50);
 				data.AddData ("restartOnComplete", "1");
 			}
 			Root = new BTNode (this, null, data);

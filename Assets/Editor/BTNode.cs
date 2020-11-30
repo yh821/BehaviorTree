@@ -47,28 +47,9 @@ namespace BT
 		}
 
 		/// <summary>
-		/// 实际Rect范围
-		/// </summary>
-		public Rect RealRect {
-			get { return BTNodeGraph.RealRect; }
-		}
-
-		/// <summary>
-		/// 节点范围
-		/// </summary>
-		public Rect NodeRect {
-			get {
-				Rect ret = RealRect;
-				ret.position += BTEditorWindow.window.Position;
-				return ret;
-			}
-			set { BTNodeGraph.RealRect = value; }
-		}
-
-		/// <summary>
 		/// 是否是根节点
 		/// </summary>
-		public bool IsRoot { get; }
+		public bool IsRoot { get { return NodeName == BTConst.RootName; } }
 
 		/// <summary>
 		/// 是否可以拖拽
@@ -78,6 +59,7 @@ namespace BT
 		/// 是否拖拽中
 		/// </summary>
 		private bool mIsDragging = false;
+		private Vector2 mDragDelta;
 
 		private Vector3 startPos;
 		private Vector3 endPos;
@@ -89,9 +71,8 @@ namespace BT
 			Data = data;
 			BTNodeGraph = new BTNodeGraph ();
 			NodeName = data.name;
-			IsRoot = NodeName == BTConst.RootName;
 			Label = NodeName.Replace ("Node", "");
-			BTNodeGraph.RealRect = new Rect (data.posX, data.posY, BTConst.Default_Width, BTConst.Default_Height);
+			BTNodeGraph.RealRect = new Rect (data.posX, data.posY, BTConst.DefaultWidth, BTConst.DefaultHeight);
 			ChildNodeList = new List<BTNode> ();
 			Guid = BTHelper.GenerateUniqueStringId ();
 			Type = BTHelper.CreateNodeType (this);
@@ -113,7 +94,7 @@ namespace BT
 			} else
 				showLabel = Label;
 
-			EditorGUI.LabelField (NodeRect, showLabel, style);
+			EditorGUI.LabelField (BTNodeGraph.NodeRect, showLabel, style);
 
 			if (IsHaveChild) {
 				startPos = BTNodeGraph.DownPointRect.center;
@@ -140,15 +121,24 @@ namespace BT
 			Event currentEvent = window.Event;
 			if (currentEvent.isMouse && currentEvent.type == EventType.MouseDrag && currentEvent.button == 0) {
 				//拖拽
-				if (NodeRect.Contains (currentEvent.mousePosition) && mCanDragMove) {
+				if (BTNodeGraph.NodeRect.Contains (currentEvent.mousePosition) && mCanDragMove) {
 					mIsDragging = true;
 					currentEvent.Use ();
 					window.CurSelectNode = this;
-					WalkChildPos (this, currentEvent.delta);
+
+					Vector2 delta;
+					if (BTEditorWindow.IsLockAxisY)
+						delta = new Vector2 (currentEvent.delta.x, 0);
+					else
+						delta = currentEvent.delta;
+
+					mDragDelta += delta;
+
+					SetRealPosition (this, delta, true);
 				}
 			} else if (currentEvent.isMouse && currentEvent.type == EventType.MouseDown && currentEvent.button == 0) {
 				//点击
-				if (NodeRect.Contains (currentEvent.mousePosition)) {
+				if (BTNodeGraph.NodeRect.Contains (currentEvent.mousePosition)) {
 					window.CurSelectNode = this;
 					mCanDragMove = true;
 					currentEvent.Use ();
@@ -162,22 +152,45 @@ namespace BT
 				if (mIsDragging) {
 					mIsDragging = false;
 					currentEvent.Use ();
+					if (BTEditorWindow.IsAutoAlign) {
+						SetRealPosition (this, GetAutoAlignX (), true);
+					}
+					mDragDelta = Vector2.zero;
 				}
 				mCanDragMove = false;
 			} else if (currentEvent.type == EventType.ContextClick) {
-				if (NodeRect.Contains (currentEvent.mousePosition)) {
+				if (BTNodeGraph.NodeRect.Contains (currentEvent.mousePosition)) {
 					//显示右键菜单
 					ShowMenu ();
 				}
 			}
 		}
 
-		private void WalkChildPos (BTNode parent, Vector2 delta)
+		private Vector2 GetAutoAlignX ()
+		{
+			if (Mathf.Abs (mDragDelta.x) >= BTConst.AutoAlignDistanceX) {
+				var dist = BTNodeGraph.RealRect.x - Parent.BTNodeGraph.RealRect.x;
+				var width = BTConst.DefaultWidth + BTConst.DefaultSpacing;
+				if (mDragDelta.x > 0) {
+					var multi = Mathf.CeilToInt (dist / width);
+					return new Vector2 (multi * width - dist, 0);
+				} else if (mDragDelta.x < 0) {
+					var multi = Mathf.FloorToInt (dist / width);
+					return new Vector2 (multi * width - dist, 0);
+				} else {
+					return Vector2.zero;
+				}
+			} else {
+				return -mDragDelta;
+			}
+		}
+
+		private void SetRealPosition (BTNode parent, Vector2 delta, bool includeChildren)
 		{
 			parent.BTNodeGraph.RealRect.position += delta;
-			if (parent.IsHaveChild) {
+			if (includeChildren && parent.IsHaveChild) {
 				foreach (var node in parent.ChildNodeList) {
-					WalkChildPos (node, delta);
+					SetRealPosition (node, delta, includeChildren);
 				}
 			}
 		}
@@ -189,49 +202,14 @@ namespace BT
 				BTHelper.RemoveChild (Owner, Parent, this);
 			else {
 				var node = BTHelper.AddChild (Owner, this, name);
-				var data = node.Data;
-				switch (name) {
-				case "waitNode":
-					data.AddData ("waitMin", "2");
-					data.AddData ("waitMax", "5");
-					break;
-				case "weightNode":
-					data.AddData ("weight", "10");
-					break;
-				}
+				BTHelper.SetNodeDefaultData (node, name);
 			}
 		}
 
 		void ShowMenu ()
 		{
-			GenericMenu menu = new GenericMenu ();
-			if (!IsRoot && !IsHaveChild)
-				AddMenuItem (menu, "Delete Node", "Delete");
-
-			if (Type.Type != BTNodeEnum.Task && ChildNodeList.Count < Type.CanAddNodeCount) {
-				menu.AddSeparator ("");
-				AddMenuItem (menu, "Composite/Random Selector", "randomSelectorNode");
-				AddMenuItem (menu, "Composite/Selector", "selectorNode");
-				AddMenuItem (menu, "Composite/Sequence", "sequenceNode");
-				AddMenuItem (menu, "Composite/Parallel", "parallelNode");
-				menu.AddSeparator ("");
-				AddMenuItem (menu, "Decorator/Failure", "failureNode");
-				AddMenuItem (menu, "Decorator/Inverter", "inverterNode");
-				AddMenuItem (menu, "Decorator/Success", "successNode");
-				menu.AddSeparator ("");
-				AddMenuItem (menu, "Action/Wait", "waitNode");
-				AddMenuItem (menu, "Action/Weight", "weightNode");
-				AddMenuItem (menu, "Action/MoveToPosition", "moveToPositionNode");
-				//AddMenuItem (menu, "Action/RandomPosition", "randomPositionNode");
-				AddMenuItem (menu, "Action/RunAnimator", "runAnimatorNode");
-			}
-
+			var menu = BTHelper.GetGenericMenu (this, Callback);
 			menu.ShowAsContext ();
-		}
-
-		void AddMenuItem (GenericMenu menu, string menuPath, string node)
-		{
-			menu.AddItem (new GUIContent (menuPath), false, Callback, node);
 		}
 	}
 }

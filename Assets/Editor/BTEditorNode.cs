@@ -22,10 +22,32 @@ namespace BT
 
 		private string mLastNodeGuid = string.Empty;
 
+		public static bool IsAutoAlign = true;
+		public static bool IsLockAxisY = true;
+
 		void DrawNodeInspector ()
 		{
 			GUILayout.Space (SPACE_VALUE);
 			EditorGUILayout.HelpBox (string.Format ("编辑行为树:{0}", mBehaviourTree.Name), MessageType.Info, true);
+
+			GUILayout.Space (SPACE_VALUE);
+			EditorGUILayout.BeginHorizontal ();
+			{
+				IsAutoAlign = GUILayout.Toggle (IsAutoAlign, "自动对齐", GUILayout.MaxWidth (80));
+				IsLockAxisY = GUILayout.Toggle (IsLockAxisY, "锁定Y轴", GUILayout.MaxWidth (80));
+			}
+			EditorGUILayout.EndHorizontal ();
+			EditorGUILayout.BeginHorizontal ();
+			{
+				if (GUILayout.Button ("JsonBT目录", GUILayout.MaxWidth (80))) {
+					System.Diagnostics.Process.Start (BTHelper.jsonPath);
+				}
+				if (GUILayout.Button ("LuaBT目录", GUILayout.MaxWidth (80))) {
+					System.Diagnostics.Process.Start (BTHelper.behaviorPath);
+				}
+			}
+			EditorGUILayout.EndHorizontal ();
+
 			GUILayout.Space (SPACE_VALUE);
 			if (GUILayout.Button ("加载行为树")) {
 				LoadBehaviorTree ();
