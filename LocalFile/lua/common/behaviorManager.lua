@@ -8,8 +8,12 @@
 
 behaviorManager = {}
 
+animatorStateEnum = {
+	idle = 0,
+	walk = 1,
+}
+
 local _format = string.format
-local _type = type
 
 local _behaviorNodeDict = {}
 local _behaviorTreeDict = {}

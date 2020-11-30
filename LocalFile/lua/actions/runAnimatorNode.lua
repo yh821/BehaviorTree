@@ -19,13 +19,13 @@ end
 
 function runAnimatorNode:start()
 	if self.data and self.data.stateId then
-		self:refresh(tonumber(self.data.stateId))
+		self:refresh(self.data.stateId)
 	end
 end
 
 function runAnimatorNode:update()
-	self:refresh(self:getSharedVar('StateID'))
-	if self:getSharedVar('PlayState') == 1 then
+	self:refresh(self:getSharedVar('animState'))
+	if self:getSharedVar('playState') == 1 then
 		return nodeState.success
 	end
 	return nodeState.running

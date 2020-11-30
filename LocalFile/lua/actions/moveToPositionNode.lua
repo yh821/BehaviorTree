@@ -15,18 +15,18 @@ local MoveToPosition = MapManager.MoveToPosition
 
 function moveToPositionNode:start()
 	self.state = nodeState.running
-	self:setSharedVar('PlayState', 0)
+	self:setSharedVar('playState', 0)
 	local targetPos = self:getSharedVar('targetPos')
 	local entityPos = GetEntityPos(self.owner.guid)
 	if targetPos == nil or IsPositionEqual(entityPos, targetPos) then
 		self.state = nodeState.failure
-		self:setSharedVar('PlayState', 1)
+		self:setSharedVar('playState', 1)
 	else
-		self:setSharedVar('StateID', 1)
+		self:setSharedVar('animState', animatorStateEnum.walk)
 		MoveToPosition(self.owner.guid, targetPos, function()
 			self.state = nodeState.success
-			self:setSharedVar('StateID', 0)
-			self:setSharedVar('PlayState', 1)
+			self:setSharedVar('animState', animatorStateEnum.idle)
+			self:setSharedVar('playState', 1)
 		end)
 	end
 end

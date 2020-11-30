@@ -12,7 +12,7 @@ local _random = math.random
 
 function waitNode:start()
 	self.deltaTime = 0
-	self.waitTime = _random(tonumber(self.data.waitMin), tonumber(self.data.waitMax))
+	self.waitTime = _random(self.data.waitMin, self.data.waitMax)
 end
 
 function waitNode:update()

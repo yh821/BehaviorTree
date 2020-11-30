@@ -9,7 +9,7 @@
 weightNode = simple_class(baseNode)
 
 function weightNode:start()
-	local weight = tonumber(self.data.weight or 0)
+	local weight = self.data.weight or 0
 	local score = math.random(0, 100)
 	if score < weight then
 		self.state = nodeState.success

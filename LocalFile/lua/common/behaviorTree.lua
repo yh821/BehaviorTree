@@ -62,3 +62,11 @@ function behaviorTree:getSharedVar(key)
 	local bb = self:getBlackboard()
 	return bb[key]
 end
+
+function behaviorTree:setStateId(stateId)
+	self:setSharedVar('stateId', stateId)
+end
+
+function behaviorTree:getStateId()
+	return self:getSharedVar('stateId')
+end

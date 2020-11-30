@@ -24,7 +24,7 @@ namespace BT
 			if (data == null) {
 				data = new BTNodeData (BTConst.RootName, null, 
 					(BTConst.WINDOWS_WIDTH - BTConst.LEFT_INSPECT_WIDTH) / 2 - BTConst.DefaultWidth / 2, 50);
-				data.AddData ("restartOnComplete", "1");
+				data.AddData ("restart", "1");
 			}
 			Root = new BTNode (this, null, data);
 			AddNode (Root);
