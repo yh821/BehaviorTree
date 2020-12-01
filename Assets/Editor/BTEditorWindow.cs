@@ -10,7 +10,7 @@ namespace BT
 		static void ShowWindow ()
 		{
 			var win = GetWindowWithRect<BTEditorWindow> (
-				new Rect (0, 0, BTConst.WINDOWS_WIDTH, BTConst.WINDOWS_HEIGHT), true, "编辑行为树");
+				new Rect (0, 0, BTConst.WINDOWS_WIDTH, BTConst.WINDOWS_HEIGHT), false, "编辑行为树");
 			win.Initialize ();
 		}
 

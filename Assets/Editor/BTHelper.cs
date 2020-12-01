@@ -311,7 +311,7 @@ namespace BT
 		public static GenericMenu GetGenericMenu (BTNode node, GenericMenu.MenuFunction2 callback)
 		{
 			GenericMenu menu = new GenericMenu ();
-			if (node.Type.Type != BTNodeEnum.Task && node.ChildNodeList.Count < node.Type.CanAddNodeCount) {
+			if (!node.IsTask && node.ChildNodeList.Count < node.Type.CanAddNodeCount) {
 				foreach (var kv in mNodeTypeDict) {
 					var data = kv.Key.Replace ("Node", "");
 					var menuPath = string.Format ("{0}/{1}", kv.Value, data);

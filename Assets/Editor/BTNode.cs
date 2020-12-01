@@ -42,9 +42,12 @@ namespace BT
 		/// <summary>
 		/// 是否拥有子节点
 		/// </summary>
-		public bool IsHaveChild {
-			get { return ChildNodeList.Count > 0; }
-		}
+		public bool IsHaveChild { get { return ChildNodeList.Count > 0; } }
+
+		/// <summary>
+		/// 是否是子节点
+		/// </summary>
+		public bool IsTask { get { return Type.Type == BTNodeEnum.Task; } }
 
 		/// <summary>
 		/// 是否是根节点
@@ -59,10 +62,16 @@ namespace BT
 		/// 是否拖拽中
 		/// </summary>
 		private bool mIsDragging = false;
+		/// <summary>
+		/// 拖拽方向距离
+		/// </summary>
 		private Vector2 mDragDelta;
 
-		private Vector3 startPos;
-		private Vector3 endPos;
+		private bool mIsLinkChild = false;
+		private bool mIsLinkParent = false;
+
+		private Vector3 mBzStartPos;
+		private Vector3 mBzEndPos;
 
 		public BTNode (BehaviourTree owner, BTNode parent, BTNodeData data)
 		{
@@ -97,19 +106,30 @@ namespace BT
 			EditorGUI.LabelField (BTNodeGraph.NodeRect, showLabel, style);
 
 			if (IsHaveChild) {
-				startPos = BTNodeGraph.DownPointRect.center;
+				mBzStartPos = BTNodeGraph.DownPointRect.center;
 				foreach (var node in ChildNodeList) {
-					endPos = node.BTNodeGraph.UpPointRect.center;
-					float center = startPos.x + (endPos.x - startPos.x) / 2;
-					Handles.DrawBezier (startPos, endPos, new Vector3 (center, startPos.y), 
-						new Vector3 (center, endPos.y), Color.white, Texture2D.whiteTexture, BTConst.BEZIER_WIDTH);
+					mBzEndPos = node.BTNodeGraph.UpPointRect.center;
+					float center = mBzStartPos.x + (mBzEndPos.x - mBzStartPos.x) / 2;
+					Handles.DrawBezier (mBzStartPos, mBzEndPos, new Vector3 (center, mBzStartPos.y), 
+						new Vector3 (center, mBzEndPos.y), Color.white, Texture2D.whiteTexture, BTConst.BEZIER_WIDTH);
 					GUI.DrawTexture (node.BTNodeGraph.UpPointRect, BTNodeStyle.LinePoint);
 				}
-				GUI.DrawTexture (BTNodeGraph.DownPointRect, BTNodeStyle.LinePoint);
 			}
 
-			if (Type.IsValid == ErrorType.Error)
-				GUI.DrawTexture (BTNodeGraph.ErrorRect, BTNodeStyle.ErrorPoint);
+			if (mIsLinkChild) {
+				var startPos = BTNodeGraph.DownPointRect.center;
+				var endPos = BTEditorWindow.window.Event.mousePosition;
+				float center = startPos.x + (endPos.x - startPos.x) / 2;
+				Handles.DrawBezier (startPos, endPos, new Vector3 (center, startPos.y), 
+					new Vector3 (center, endPos.y), Color.white, Texture2D.whiteTexture, BTConst.BEZIER_WIDTH);
+			}
+
+			if (!IsTask) {
+				if (Type.IsValid == ErrorType.Error)
+					GUI.DrawTexture (BTNodeGraph.DownPointRect, BTNodeStyle.ErrorPoint);
+				else
+					GUI.DrawTexture (BTNodeGraph.DownPointRect, BTNodeStyle.LinePoint);
+			}
 		}
 
 		/// <summary>
@@ -125,15 +145,12 @@ namespace BT
 					mIsDragging = true;
 					currentEvent.Use ();
 					window.CurSelectNode = this;
-
 					Vector2 delta;
 					if (BTEditorWindow.IsLockAxisY)
 						delta = new Vector2 (currentEvent.delta.x, 0);
 					else
 						delta = currentEvent.delta;
-
 					mDragDelta += delta;
-
 					SetRealPosition (this, delta, true);
 				}
 			} else if (currentEvent.isMouse && currentEvent.type == EventType.MouseDown && currentEvent.button == 0) {
@@ -141,6 +158,12 @@ namespace BT
 				if (BTNodeGraph.NodeRect.Contains (currentEvent.mousePosition)) {
 					window.CurSelectNode = this;
 					mCanDragMove = true;
+					currentEvent.Use ();
+				} else if (BTNodeGraph.UpPointRect.Contains (currentEvent.mousePosition)) {
+					mIsLinkParent = true;
+					currentEvent.Use ();
+				} else if (BTNodeGraph.DownPointRect.Contains (currentEvent.mousePosition)) {
+					mIsLinkChild = true;
 					currentEvent.Use ();
 				} else {
 					if (currentEvent.mousePosition.x <= canvas.width - BTConst.LEFT_INSPECT_WIDTH) {
@@ -156,6 +179,12 @@ namespace BT
 						SetRealPosition (this, GetAutoAlignX (), true);
 					}
 					mDragDelta = Vector2.zero;
+				}
+				if (mIsLinkParent) {
+					mIsLinkParent = false;
+				}
+				if (mIsLinkChild) {
+					mIsLinkChild = false;
 				}
 				mCanDragMove = false;
 			} else if (currentEvent.type == EventType.ContextClick) {
