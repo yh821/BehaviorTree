@@ -23,7 +23,7 @@ namespace BT
 		private string mLastNodeGuid = string.Empty;
 
 		public static bool IsAutoAlign = true;
-		public static bool IsLockAxisY = true;
+		public static bool IsLockAxisY = false;
 
 		void DrawNodeInspector ()
 		{
@@ -31,12 +31,12 @@ namespace BT
 			EditorGUILayout.HelpBox (string.Format ("编辑行为树:{0}", mBehaviourTree.Name), MessageType.Info, true);
 
 			GUILayout.Space (SPACE_VALUE);
-			EditorGUILayout.BeginHorizontal ();
-			{
-				IsAutoAlign = GUILayout.Toggle (IsAutoAlign, "自动对齐", GUILayout.MaxWidth (80));
-				IsLockAxisY = GUILayout.Toggle (IsLockAxisY, "锁定Y轴", GUILayout.MaxWidth (80));
-			}
-			EditorGUILayout.EndHorizontal ();
+			//EditorGUILayout.BeginHorizontal ();
+			//{
+			//	IsAutoAlign = GUILayout.Toggle (IsAutoAlign, "自动对齐", GUILayout.MaxWidth (80));
+			//	IsLockAxisY = GUILayout.Toggle (IsLockAxisY, "锁定Y轴", GUILayout.MaxWidth (80));
+			//}
+			//EditorGUILayout.EndHorizontal ();
 			EditorGUILayout.BeginHorizontal ();
 			{
 				if (GUILayout.Button ("JsonBT目录", GUILayout.MaxWidth (80))) {
@@ -82,7 +82,10 @@ namespace BT
 
 			GUI.color = Color.green;
 			if (GUILayout.Button ("保存行为树")) {
-				BTHelper.SaveBTData (mBehaviourTree);
+				if (mBehaviourTree.OrphanNodeDict.Count > 0)
+					EditorUtility.DisplayDialog ("提示", "有节点未连上", "确定");
+				else
+					BTHelper.SaveBTData (mBehaviourTree);
 			}
 			GUI.color = Color.white;
 

@@ -24,6 +24,9 @@ namespace BT
 		/// </summary>
 		public const int NormalTaskCanAddNode = 0;
 
+		/// <summary>
+		/// 窗口默认尺寸
+		/// </summary>
 		public const float WINDOWS_WIDTH = 1280;
 		public const float WINDOWS_HEIGHT = 768;
 
@@ -33,7 +36,7 @@ namespace BT
 		/// <summary>
 		/// 取消连线的按钮大小
 		/// </summary>
-		public const float LINE_DISABLE_LENGTH = 30;
+		public const float LINE_DISABLE_LENGTH = 8;
 
 		/// <summary>
 		/// 连接点半径
@@ -54,17 +57,13 @@ namespace BT
 		/// </summary>
 		public const int DefaultHeight = 60;
 		/// <summary>
-		/// 节点默认纵向距离
-		/// </summary>
-		public const int DefaultDistance = 120;
-		/// <summary>
 		/// 节点默认横行距离
 		/// </summary>
-		public const int DefaultSpacing = 10;
+		public const int DefaultSpacingX = 10;
 		/// <summary>
-		/// 自动对齐距离
+		/// 节点默认纵向距离
 		/// </summary>
-		public const int AutoAlignDistanceX = DefaultDistance / 2;
+		public const int DefaultSpacingY = 60;
 		/// <summary>
 		/// 根节点名
 		/// </summary>
@@ -73,7 +72,7 @@ namespace BT
 
 	public class BTNodeData
 	{
-		public string name = BTConst.RootName;
+		public string name = string.Empty;
 		public string type = string.Empty;
 		public float posX = 0;
 		public float posY = 0;
@@ -206,8 +205,8 @@ namespace BT
 		public static void WalkNodeData (BTNode parent)
 		{
 			parent.Data.name = parent.NodeName;
-			parent.Data.posX = parent.BTNodeGraph.NodeRect.position.x;
-			parent.Data.posY = parent.BTNodeGraph.NodeRect.position.y;
+			parent.Data.posX = parent.BTNodeGraph.RealRect.position.x;
+			parent.Data.posY = parent.BTNodeGraph.RealRect.position.y;
 
 			if (parent.IsHaveChild) {
 				foreach (var node in parent.ChildNodeList) {
@@ -217,7 +216,13 @@ namespace BT
 				parent.Data.children.Sort ((a, b) => {
 					if (a.posX > b.posX)
 						return 1;
-					return -1;
+					if (a.posX < b.posX)
+						return -1;
+					if (a.posY > b.posY)
+						return 1;
+					if (a.posY < b.posY)
+						return -1;
+					return 0;
 				});
 			}
 		}
@@ -249,7 +254,7 @@ namespace BT
 			var pos = parent.BTNodeGraph.RealRect.position;
 			if (!mNodeTypeDict.ContainsKey (name))
 				throw new ArgumentNullException (name, "找不到该类型");
-			var data = new BTNodeData (name, mNodeTypeDict [name], pos.x, pos.y + BTConst.DefaultDistance);
+			var data = new BTNodeData (name, mNodeTypeDict [name], pos.x, pos.y + BTConst.DefaultSpacingY);
 			parent.Data.AddChild (data);
 			return AddChild (owner, parent, data);
 		}
@@ -262,15 +267,32 @@ namespace BT
 			return child;
 		}
 
-		public static void RemoveChild (BehaviourTree owner, BTNode parent, BTNode self)
+		public static void RemoveChild (BTNode node)
 		{
-			if (self.IsHaveChild)
-				Debug.LogError ("该节点包含子节点, 不能删除");
-			else {
-				owner.RemoveNode (self);
-				parent.ChildNodeList.Remove (self);
-				parent.Data.children.Remove (self.Data);
+			if (node.IsHaveChild) {
+				foreach (var child in node.ChildNodeList) {
+					child.Owner.AddOrphanNode (child);
+					child.Parent = null;
+				}
 			}
+			if (node.IsHaveParent) {
+				node.Parent.ChildNodeList.Remove (node);
+				node.Parent.Data.children.Remove (node.Data);
+			}
+			node.Owner.RemoveNode (node);
+		}
+
+		public static void AutoAlignPosition (BTNode node)
+		{
+			var width = BTConst.DefaultWidth + BTConst.DefaultSpacingX;
+			var multiW = Mathf.RoundToInt (node.BTNodeGraph.RealRect.x / width);
+			float x = multiW * width;
+
+			var height = BTConst.DefaultHeight + BTConst.DefaultSpacingY;
+			var multiH = Mathf.RoundToInt (node.BTNodeGraph.RealRect.y / height);
+			float y = multiH * height;
+
+			node.BTNodeGraph.RealRect.position = new Vector2 (x, y);
 		}
 
 		public static void LoadNodeFile ()
@@ -319,7 +341,7 @@ namespace BT
 				}
 			}
 
-			if (!node.IsRoot && !node.IsHaveChild) {
+			if (!node.IsRoot) {
 				menu.AddSeparator ("");
 				menu.AddItem (new GUIContent ("Delete Node"), false, callback, "Delete");
 			}

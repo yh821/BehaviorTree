@@ -51,5 +51,15 @@ namespace BT
 					BTConst.LINE_POINT_LENGTH, BTConst.LINE_POINT_LENGTH);
 			}
 		}
+
+		/// <summary>
+		/// 断开父节点
+		/// </summary>
+		public Rect XLineRect {
+			get {
+				return new Rect (NodeRect.xMax - BTConst.LINE_DISABLE_LENGTH - 4, NodeRect.yMin + 4,
+					BTConst.LINE_DISABLE_LENGTH, BTConst.LINE_DISABLE_LENGTH);
+			}
+		}
 	}
 }

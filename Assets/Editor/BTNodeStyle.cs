@@ -37,15 +37,16 @@ namespace BT
 			get { return "flow node 3 on"; }
 		}
 
-		private static Texture _LineBoxTex;
 
-		public static Texture LineBoxTex {
+		private static Texture _XLinePoint;
+
+		public static Texture XLinePoint {
 			get {
-				if (_LineBoxTex == null) {
-					_LineBoxTex = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/Icon_ModalBox_Cross.png");
+				if (_XLinePoint == null) {
+					_XLinePoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/Icon_ModalBox_Cross.png");
 				}
 
-				return _LineBoxTex;
+				return _XLinePoint;
 			}
 		}
 

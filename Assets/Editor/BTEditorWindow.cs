@@ -6,11 +6,12 @@ namespace BT
 	public partial class BTEditorWindow : EditorWindow
 	{
 		#region Property
+
 		[MenuItem ("Tools/BehaviorEditor")]
 		static void ShowWindow ()
 		{
 			var win = GetWindowWithRect<BTEditorWindow> (
-				new Rect (0, 0, BTConst.WINDOWS_WIDTH, BTConst.WINDOWS_HEIGHT), false, "编辑行为树");
+				          new Rect (0, 0, BTConst.WINDOWS_WIDTH, BTConst.WINDOWS_HEIGHT), false, "编辑行为树");
 			win.Initialize ();
 		}
 
@@ -43,6 +44,7 @@ namespace BT
 		}
 
 		public BTNode CurSelectNode { get; set; }
+
 		#endregion
 
 		[HideInInspector] public BTGrid BTGrid;
@@ -81,6 +83,15 @@ namespace BT
 				GUILayout.EndVertical ();
 			}
 			GUILayout.EndHorizontal ();
+		}
+
+		public BTNode GetMouseTriggerDownPoint (Vector2 mousePos)
+		{
+			foreach (var node in mBehaviourTree.BTNodeDict.Values) {
+				if (node.BTNodeGraph.DownPointRect.Contains (mousePos))
+					return node;
+			}
+			return null;
 		}
 	}
 }

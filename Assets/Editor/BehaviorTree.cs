@@ -6,7 +6,8 @@ namespace BT
 {
 	public class BehaviourTree
 	{
-		public Dictionary<string, BTNode> BTNodeDic;
+		public Dictionary<string, BTNode> BTNodeDict;
+		public Dictionary<string, BTNode> OrphanNodeDict;
 
 		public string Name { get; set; }
 
@@ -14,13 +15,14 @@ namespace BT
 
 		public BehaviourTree ()
 		{
-			BTNodeDic = new Dictionary<string, BTNode> ();     
+			BTNodeDict = new Dictionary<string, BTNode> ();     
 		}
 
 		public BehaviourTree (string name, BTNodeData data = null)
 		{
 			Name = name;
-			BTNodeDic = new Dictionary<string, BTNode> ();
+			BTNodeDict = new Dictionary<string, BTNode> ();
+			OrphanNodeDict = new Dictionary<string, BTNode> ();
 			if (data == null) {
 				data = new BTNodeData (BTConst.RootName, null, 
 					(BTConst.WINDOWS_WIDTH - BTConst.LEFT_INSPECT_WIDTH) / 2 - BTConst.DefaultWidth / 2, 50);
@@ -32,19 +34,29 @@ namespace BT
 
 		public void Update (Rect canvas)
 		{
-			foreach (var node in BTNodeDic.Values) {
+			foreach (var node in BTNodeDict.Values) {
 				node.Update (canvas);
 			}
 		}
 
 		public void AddNode (BTNode node)
 		{
-			BTNodeDic.Add (node.Guid, node);
+			BTNodeDict.Add (node.Guid, node);
 		}
 
 		public void RemoveNode (BTNode node)
 		{
-			BTNodeDic.Remove (node.Guid);
+			BTNodeDict.Remove (node.Guid);
+		}
+
+		public void AddOrphanNode (BTNode node)
+		{
+			OrphanNodeDict.Add (node.Guid, node);
+		}
+
+		public void RemoveOrphanNode (BTNode node)
+		{
+			OrphanNodeDict.Remove (node.Guid);
 		}
 	}
 }

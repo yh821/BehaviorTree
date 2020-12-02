@@ -1,7 +1,7 @@
 local __bt__ = {
   name= "rootNode",
-  posX= 460.0,
-  posY= 50.0,
+  posX= 520.0,
+  posY= 0.0,
   data= {
     restart= 1
   },
@@ -9,14 +9,14 @@ local __bt__ = {
     {
       name= "selectorNode",
       type= "composites",
-      posX= 460.0,
-      posY= 170.0,
+      posX= 520.0,
+      posY= 120.0,
       children= {
         {
           name= "checkStateNode",
           type= "decorators",
-          posX= 330.0,
-          posY= 290.0,
+          posX= 390.0,
+          posY= 240.0,
           data= {
             stateId= 0
           },
@@ -24,14 +24,14 @@ local __bt__ = {
             {
               name= "sequenceNode",
               type= "composites",
-              posX= 330.0,
-              posY= 410.0,
+              posX= 390.0,
+              posY= 360.0,
               children= {
                 {
                   name= "weightNode",
                   type= "actions",
-                  posX= 200.0,
-                  posY= 530.0,
+                  posX= 260.0,
+                  posY= 480.0,
                   data= {
                     weight= 10
                   },
@@ -39,14 +39,14 @@ local __bt__ = {
                 {
                   name= "parallelNode",
                   type= "composites",
-                  posX= 330.0,
-                  posY= 530.0,
+                  posX= 390.0,
+                  posY= 480.0,
                   children= {
                     {
                       name= "waitNode",
                       type= "actions",
-                      posX= 330.0,
-                      posY= 650.0,
+                      posX= 390.0,
+                      posY= 600.0,
                       data= {
                         waitMin= 2,
                         waitMax= 5
@@ -61,8 +61,8 @@ local __bt__ = {
         {
           name= "checkStateNode",
           type= "decorators",
-          posX= 590.0,
-          posY= 290.0,
+          posX= 520.0,
+          posY= 240.0,
           data= {
             stateId= 0
           },
@@ -70,8 +70,8 @@ local __bt__ = {
         {
           name= "checkStateNode",
           type= "decorators",
-          posX= 460.0,
-          posY= 290.0,
+          posX= 650.0,
+          posY= 240.0,
           data= {
             stateId= 0
           },

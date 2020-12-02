@@ -28,7 +28,7 @@ namespace BT
 
 		public BehaviourTree Owner { get; }
 
-		public BTNode Parent { get; }
+		public BTNode Parent { set; get; }
 
 		/// <summary>
 		/// 节点Rect定义
@@ -38,6 +38,11 @@ namespace BT
 		/// 子节点
 		/// </summary>
 		public List<BTNode> ChildNodeList;
+
+		/// <summary>
+		/// 是否拥有子节点
+		/// </summary>
+		public bool IsHaveParent { get { return Parent != null; } }
 
 		/// <summary>
 		/// 是否拥有子节点
@@ -55,6 +60,11 @@ namespace BT
 		public bool IsRoot { get { return NodeName == BTConst.RootName; } }
 
 		/// <summary>
+		/// 是否已选中
+		/// </summary>
+		bool IsSelected { get { return BTEditorWindow.window.CurSelectNode == this; } }
+
+		/// <summary>
 		/// 是否可以拖拽
 		/// </summary>
 		private bool mCanDragMove = false;
@@ -63,11 +73,8 @@ namespace BT
 		/// </summary>
 		private bool mIsDragging = false;
 		/// <summary>
-		/// 拖拽方向距离
+		/// 正在连父节点
 		/// </summary>
-		private Vector2 mDragDelta;
-
-		private bool mIsLinkChild = false;
 		private bool mIsLinkParent = false;
 
 		private Vector3 mBzStartPos;
@@ -95,7 +102,7 @@ namespace BT
 
 		private void DrawNode ()
 		{
-			GUIStyle style = BTEditorWindow.window.CurSelectNode == this ? Type.SelectStyle : Type.NormalStyle;
+			GUIStyle style = IsSelected ? Type.SelectStyle : Type.NormalStyle;
 			string showLabel;
 			if (Data.data != null && Data.data.Count > 0) {
 				var first = Data.data.First ();
@@ -116,12 +123,10 @@ namespace BT
 				}
 			}
 
-			if (mIsLinkChild) {
-				var startPos = BTNodeGraph.DownPointRect.center;
+			if (mIsLinkParent) {
+				var startPos = BTNodeGraph.UpPointRect.center;
 				var endPos = BTEditorWindow.window.Event.mousePosition;
-				float center = startPos.x + (endPos.x - startPos.x) / 2;
-				Handles.DrawBezier (startPos, endPos, new Vector3 (center, startPos.y), 
-					new Vector3 (center, endPos.y), Color.white, Texture2D.whiteTexture, BTConst.BEZIER_WIDTH);
+				Handles.DrawLine (startPos, endPos);
 			}
 
 			if (!IsTask) {
@@ -130,6 +135,15 @@ namespace BT
 				else
 					GUI.DrawTexture (BTNodeGraph.DownPointRect, BTNodeStyle.LinePoint);
 			}
+
+			if (IsRoot)
+				return;
+
+			if (!IsHaveParent)
+				GUI.DrawTexture (BTNodeGraph.UpPointRect, BTNodeStyle.ErrorPoint);
+
+			if (IsSelected && IsHaveParent)
+				GUI.DrawTexture (BTNodeGraph.XLineRect, BTNodeStyle.XLinePoint);
 		}
 
 		/// <summary>
@@ -138,88 +152,91 @@ namespace BT
 		private void DealHandles (Rect canvas)
 		{
 			var window = BTEditorWindow.window;
-			Event currentEvent = window.Event;
-			if (currentEvent.isMouse && currentEvent.type == EventType.MouseDrag && currentEvent.button == 0) {
+			Event curEvent = window.Event;
+			if (curEvent.isMouse && curEvent.type == EventType.MouseDrag && curEvent.button == 0) {
 				//拖拽
-				if (BTNodeGraph.NodeRect.Contains (currentEvent.mousePosition) && mCanDragMove) {
+				if (BTNodeGraph.NodeRect.Contains (curEvent.mousePosition) && mCanDragMove) {
+					curEvent.Use ();
 					mIsDragging = true;
-					currentEvent.Use ();
 					window.CurSelectNode = this;
+
 					Vector2 delta;
 					if (BTEditorWindow.IsLockAxisY)
-						delta = new Vector2 (currentEvent.delta.x, 0);
+						delta = new Vector2 (curEvent.delta.x, 0);
 					else
-						delta = currentEvent.delta;
-					mDragDelta += delta;
-					SetRealPosition (this, delta, true);
+						delta = curEvent.delta;
+					
+					UpdateNodePosition (this, delta);
 				}
-			} else if (currentEvent.isMouse && currentEvent.type == EventType.MouseDown && currentEvent.button == 0) {
+			} else if (curEvent.isMouse && curEvent.type == EventType.MouseDown && curEvent.button == 0) {
 				//点击
-				if (BTNodeGraph.NodeRect.Contains (currentEvent.mousePosition)) {
+				if (BTNodeGraph.XLineRect.Contains (curEvent.mousePosition)) {
+					curEvent.Use ();
+					if (IsHaveParent && !IsRoot) {
+						Parent.ChildNodeList.Remove (this);
+						Parent.Data.children.Remove (Data);
+						Owner.AddOrphanNode (this);
+						Parent = null;
+					}
+				} else if (BTNodeGraph.UpPointRect.Contains (curEvent.mousePosition)) {
+					curEvent.Use ();
+					window.CurSelectNode = this;
+					mIsLinkParent = true;
+				} else if (BTNodeGraph.NodeRect.Contains (curEvent.mousePosition)) {
+					curEvent.Use ();
 					window.CurSelectNode = this;
 					mCanDragMove = true;
-					currentEvent.Use ();
-				} else if (BTNodeGraph.UpPointRect.Contains (currentEvent.mousePosition)) {
-					mIsLinkParent = true;
-					currentEvent.Use ();
-				} else if (BTNodeGraph.DownPointRect.Contains (currentEvent.mousePosition)) {
-					mIsLinkChild = true;
-					currentEvent.Use ();
 				} else {
-					if (currentEvent.mousePosition.x <= canvas.width - BTConst.LEFT_INSPECT_WIDTH) {
+					if (curEvent.mousePosition.x <= canvas.width - BTConst.LEFT_INSPECT_WIDTH) {
 						window.CurSelectNode = null;
 					}
 				}
-			} else if (currentEvent.isMouse && currentEvent.type == EventType.MouseUp && currentEvent.button == 0) {
+			} else if (curEvent.isMouse && curEvent.type == EventType.MouseUp && curEvent.button == 0) {
 				//松开鼠标
 				if (mIsDragging) {
 					mIsDragging = false;
-					currentEvent.Use ();
+					curEvent.Use ();
 					if (BTEditorWindow.IsAutoAlign) {
-						SetRealPosition (this, GetAutoAlignX (), true);
+						SetNodePosition (this);
 					}
-					mDragDelta = Vector2.zero;
 				}
+
 				if (mIsLinkParent) {
 					mIsLinkParent = false;
+					var parent = window.GetMouseTriggerDownPoint (curEvent.mousePosition);
+					if (parent != null) {
+						parent.ChildNodeList.Add (this);
+						parent.Data.AddChild (Data);
+						Owner.RemoveOrphanNode (this);
+						Parent = parent;
+					}
 				}
-				if (mIsLinkChild) {
-					mIsLinkChild = false;
-				}
+
 				mCanDragMove = false;
-			} else if (currentEvent.type == EventType.ContextClick) {
-				if (BTNodeGraph.NodeRect.Contains (currentEvent.mousePosition)) {
+			} else if (curEvent.type == EventType.ContextClick) {
+				if (BTNodeGraph.NodeRect.Contains (curEvent.mousePosition)) {
 					//显示右键菜单
 					ShowMenu ();
 				}
 			}
 		}
 
-		private Vector2 GetAutoAlignX ()
+		private void UpdateNodePosition (BTNode parent, Vector2 delta)
 		{
-			if (Mathf.Abs (mDragDelta.x) >= BTConst.AutoAlignDistanceX) {
-				var dist = BTNodeGraph.RealRect.x - Parent.BTNodeGraph.RealRect.x;
-				var width = BTConst.DefaultWidth + BTConst.DefaultSpacing;
-				if (mDragDelta.x > 0) {
-					var multi = Mathf.CeilToInt (dist / width);
-					return new Vector2 (multi * width - dist, 0);
-				} else if (mDragDelta.x < 0) {
-					var multi = Mathf.FloorToInt (dist / width);
-					return new Vector2 (multi * width - dist, 0);
-				} else {
-					return Vector2.zero;
+			parent.BTNodeGraph.RealRect.position += delta;
+			if (parent.IsHaveChild) {
+				foreach (var node in parent.ChildNodeList) {
+					UpdateNodePosition (node, delta);
 				}
-			} else {
-				return -mDragDelta;
 			}
 		}
 
-		private void SetRealPosition (BTNode parent, Vector2 delta, bool includeChildren)
+		private void SetNodePosition (BTNode parent)
 		{
-			parent.BTNodeGraph.RealRect.position += delta;
-			if (includeChildren && parent.IsHaveChild) {
+			BTHelper.AutoAlignPosition (parent);
+			if (parent.IsHaveChild) {
 				foreach (var node in parent.ChildNodeList) {
-					SetRealPosition (node, delta, includeChildren);
+					SetNodePosition (node);
 				}
 			}
 		}
@@ -228,7 +245,7 @@ namespace BT
 		{
 			string name = obj.ToString ();
 			if (name == "Delete")
-				BTHelper.RemoveChild (Owner, Parent, this);
+				BTHelper.RemoveChild (this);
 			else {
 				var node = BTHelper.AddChild (Owner, this, name);
 				BTHelper.SetNodeDefaultData (node, name);
