@@ -126,7 +126,10 @@ namespace BT
 			if (mIsLinkParent) {
 				var startPos = BTNodeGraph.UpPointRect.center;
 				var endPos = BTEditorWindow.window.Event.mousePosition;
-				Handles.DrawLine (startPos, endPos);
+				float center = startPos.x + (endPos.x - startPos.x) / 2;
+				Handles.DrawBezier (startPos, endPos, new Vector3 (center, startPos.y), 
+					new Vector3 (center, endPos.y), Color.white, Texture2D.whiteTexture, BTConst.BEZIER_WIDTH);
+				//Handles.DrawLine (startPos, endPos);
 			}
 
 			if (!IsTask) {
@@ -136,14 +139,9 @@ namespace BT
 					GUI.DrawTexture (BTNodeGraph.DownPointRect, BTNodeStyle.LinePoint);
 			}
 
-			if (IsRoot)
-				return;
-
-			if (!IsHaveParent)
+			if (!IsRoot && !IsHaveParent) {
 				GUI.DrawTexture (BTNodeGraph.UpPointRect, BTNodeStyle.ErrorPoint);
-
-			if (IsSelected && IsHaveParent)
-				GUI.DrawTexture (BTNodeGraph.XLineRect, BTNodeStyle.XLinePoint);
+			}
 		}
 
 		/// <summary>
@@ -170,18 +168,19 @@ namespace BT
 				}
 			} else if (curEvent.isMouse && curEvent.type == EventType.MouseDown && curEvent.button == 0) {
 				//点击
-				if (BTNodeGraph.XLineRect.Contains (curEvent.mousePosition)) {
+				if (BTNodeGraph.UpPointRect.Contains (curEvent.mousePosition)) {
 					curEvent.Use ();
-					if (IsHaveParent && !IsRoot) {
-						Parent.ChildNodeList.Remove (this);
-						Parent.Data.children.Remove (Data);
-						Owner.AddOrphanNode (this);
-						Parent = null;
+					if (!IsRoot) {
+						if (IsHaveParent) {
+							Parent.ChildNodeList.Remove (this);
+							Parent.Data.children.Remove (Data);
+							Owner.AddOrphanNode (this);
+							Parent = null;
+						} else {
+							window.CurSelectNode = this;
+							mIsLinkParent = true;
+						}
 					}
-				} else if (BTNodeGraph.UpPointRect.Contains (curEvent.mousePosition)) {
-					curEvent.Use ();
-					window.CurSelectNode = this;
-					mIsLinkParent = true;
 				} else if (BTNodeGraph.NodeRect.Contains (curEvent.mousePosition)) {
 					curEvent.Use ();
 					window.CurSelectNode = this;
@@ -204,7 +203,7 @@ namespace BT
 				if (mIsLinkParent) {
 					mIsLinkParent = false;
 					var parent = window.GetMouseTriggerDownPoint (curEvent.mousePosition);
-					if (parent != null) {
+					if (parent != null && parent != this && parent.ChildNodeList.Count < parent.Type.CanAddNodeCount) {
 						parent.ChildNodeList.Add (this);
 						parent.Data.AddChild (Data);
 						Owner.RemoveOrphanNode (this);

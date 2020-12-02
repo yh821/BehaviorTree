@@ -57,7 +57,8 @@ namespace BT
 		/// </summary>
 		public Rect XLineRect {
 			get {
-				return new Rect (NodeRect.xMax - BTConst.LINE_DISABLE_LENGTH - 4, NodeRect.yMin + 4,
+				return new Rect (NodeRect.center.x - BTConst.LINE_DISABLE_LENGTH / 2,
+					NodeRect.yMin - BTConst.LINE_POINT_LENGTH + BTConst.LINE_DISABLE_LENGTH,
 					BTConst.LINE_DISABLE_LENGTH, BTConst.LINE_DISABLE_LENGTH);
 			}
 		}
