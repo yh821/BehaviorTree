@@ -38,7 +38,9 @@ function baseNode:tick()
 	if self.state == nil then
 		self:start()
 	end
-	self.state = self:update()
+	if self.state == nil or self.state == nodeState.running then
+		self.state = self:update()
+	end
 	return self.state
 end
 

@@ -39,10 +39,10 @@ function behaviorTree:tick()
 	if self.restartOnComplete and (state == nodeState.success or state == nodeState.failure) then
 		_resetAll(self.child)
 	end
-	if state == nil or state == nodeState.running then
+	if self.child.state == nil or self.child.state == nodeState.running then
 		self.child.state = self.child:tick()
 	else
-		return state
+		return self.child.state
 	end
 end
 
