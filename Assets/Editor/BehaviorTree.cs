@@ -56,7 +56,8 @@ namespace BT
 
 		public void RemoveOrphanNode (BTNode node)
 		{
-			OrphanNodeDict.Remove (node.Guid);
+			if (OrphanNodeDict.ContainsKey(node.Guid))
+				OrphanNodeDict.Remove (node.Guid);
 		}
 	}
 }

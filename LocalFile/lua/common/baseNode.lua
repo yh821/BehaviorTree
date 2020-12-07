@@ -50,6 +50,9 @@ function baseNode:reset()
 	self.state = nil
 end
 
+function baseNode:broke()
+end
+
 function baseNode:addChild(node)
 end
 

@@ -46,6 +46,21 @@ function behaviorTree:tick()
 	end
 end
 
+local _breakAll
+_breakAll = function(parent)
+	parent:broke()
+	local children = parent:getChildren()
+	if children then
+		for i, v in ipairs(children) do
+			_breakAll(v)
+		end
+	end
+end
+
+function behaviorTree:broke()
+	_breakAll(self.child)
+end
+
 function behaviorTree:getBlackboard()
 	if self.blackBoard == nil then
 		self.blackBoard = {}

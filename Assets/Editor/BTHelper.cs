@@ -275,10 +275,13 @@ namespace BT
 					child.Parent = null;
 				}
 			}
+
 			if (node.IsHaveParent) {
 				node.Parent.ChildNodeList.Remove (node);
 				node.Parent.Data.children.Remove (node.Data);
 			}
+
+			node.Owner.RemoveOrphanNode (node);
 			node.Owner.RemoveNode (node);
 		}
 
