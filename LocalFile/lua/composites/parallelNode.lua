@@ -30,6 +30,9 @@ function parallelNode:tick()
 				if v.state ~= nodeState.success then
 					state = v.state
 				end
+				if state == nodeState.failure then
+					break
+				end
 			end
 		end
 	end

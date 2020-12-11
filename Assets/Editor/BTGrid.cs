@@ -34,7 +34,7 @@ namespace BT
 		public void Handles ()
 		{
 			Event currentEvent = BTEditorWindow.window.Event;
-			if (currentEvent.isMouse && currentEvent.button == 2 && currentEvent.type == EventType.MouseDrag) {
+			if (currentEvent.isMouse && currentEvent.button == 1 && currentEvent.type == EventType.MouseDrag) {
 				currentEvent.Use ();
 				BTEditorWindow.window.Position += currentEvent.delta;                
 			}

@@ -27,6 +27,8 @@ namespace BT
 
 		void DrawNodeInspector ()
 		{
+			GUI.DrawTexture (BTNodeGraph.NodeEditorRect, BTNodeStyle.NodeEditorBG);
+
 			GUILayout.Space (SPACE_VALUE);
 			EditorGUILayout.HelpBox (string.Format ("编辑行为树:{0}", mBehaviourTree.Name), MessageType.Info, true);
 
@@ -95,6 +97,7 @@ namespace BT
 			var node = window.CurSelectNode;
 			if (node != null) {
 				var data = node.Data;
+				data.displayName = EditorGUILayout.TextField ("显示名:", data.displayName);
 				EditorGUILayout.LabelField ("节点名:", data.name);
 				if (node.Guid != mLastNodeGuid) {
 					mLastNodeGuid = node.Guid;

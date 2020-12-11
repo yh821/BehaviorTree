@@ -46,7 +46,7 @@ namespace BT
 		/// <summary>
 		/// 左侧监视面板宽度
 		/// </summary>
-		public const float LEFT_INSPECT_WIDTH = 240;
+		public const float RIGHT_INSPECT_WIDTH = 240;
 
 		/// <summary>
 		/// 节点默认宽度
@@ -72,6 +72,7 @@ namespace BT
 
 	public class BTNodeData
 	{
+		public string displayName = string.Empty;
 		public string name = string.Empty;
 		public string type = string.Empty;
 		public float posX = 0;
@@ -87,6 +88,7 @@ namespace BT
 			this.type = type;
 			posX = x;
 			posY = y;
+			displayName = name.Replace ("Node", "");
 		}
 
 		public void AddChild (BTNodeData child)
@@ -197,6 +199,11 @@ namespace BT
 					content = content.Replace (m.Value, word);
 				}
 
+				mc = Regex.Matches (content, "\\s*displayName= [^\\s}]+,?");
+				foreach (Match m in mc) {
+					content = content.Replace (m.Value, "");
+				}
+
 				content = string.Format ("local __bt__ = {0}\nreturn __bt__", content);
 				File.WriteAllText (Path.Combine (behaviorPath, string.Format ("{0}.lua", tree.Name)), content);
 			}
@@ -254,7 +261,8 @@ namespace BT
 			var pos = parent.BTNodeGraph.RealRect.position;
 			if (!mNodeTypeDict.ContainsKey (name))
 				throw new ArgumentNullException (name, "找不到该类型");
-			var data = new BTNodeData (name, mNodeTypeDict [name], pos.x, pos.y + BTConst.DefaultSpacingY);
+			var data = new BTNodeData (name, mNodeTypeDict [name], pos.x, 
+				           pos.y + BTConst.DefaultHeight + BTConst.DefaultSpacingY);
 			parent.Data.AddChild (data);
 			return AddChild (owner, parent, data);
 		}
@@ -359,15 +367,19 @@ namespace BT
 			case "waitNode":
 				data.AddData ("waitMin", "2");
 				data.AddData ("waitMax", "5");
+				data.displayName = "等待时间";
 				break;
 			case "weightNode":
 				data.AddData ("weight", "10");
+				data.displayName = "几率权重";
 				break;
 			case "checkStateNode":
 				data.AddData ("stateId", "0");
+				data.displayName = "筛选状态";
 				break;
 			case "speakNode":
 				data.AddData ("say", "hello world");
+				data.displayName = "显示对话";
 				break;
 			}
 		}

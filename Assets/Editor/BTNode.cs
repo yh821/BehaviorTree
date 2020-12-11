@@ -17,11 +17,6 @@ namespace BT
 		/// </summary>
 		public string Guid { get; }
 
-		/// <summary>
-		/// 节点名
-		/// </summary>
-		public string Label { get; }
-
 		public string NodeName { get; }
 
 		public BTNodeData Data { get; }
@@ -87,7 +82,6 @@ namespace BT
 			Data = data;
 			BTNodeGraph = new BTNodeGraph ();
 			NodeName = data.name;
-			Label = NodeName.Replace ("Node", "");
 			BTNodeGraph.RealRect = new Rect (data.posX, data.posY, BTConst.DefaultWidth, BTConst.DefaultHeight);
 			ChildNodeList = new List<BTNode> ();
 			Guid = BTHelper.GenerateUniqueStringId ();
@@ -103,12 +97,20 @@ namespace BT
 		private void DrawNode ()
 		{
 			GUIStyle style = IsSelected ? Type.SelectStyle : Type.NormalStyle;
-			string showLabel;
-			if (Data.data != null && Data.data.Count > 0) {
+			string showLabel = Data.displayName;
+			if (Data.data != null && Data.data.Count == 1) {
 				var first = Data.data.First ();
-				showLabel = string.Format ("{0}\n{1}:{2}", Label, first.Key, first.Value);
-			} else
-				showLabel = Label;
+				showLabel = string.Format ("{0}\n{1}:{2}", showLabel, first.Key, first.Value);
+			} else if (Data.data != null && Data.data.Count >= 2) {
+				int i = 0;
+				foreach (var data in Data.data) {
+					if (i < 2)
+						showLabel = string.Format ("{0}\n{1}:{2}", showLabel, data.Key, data.Value);
+					else
+						break;
+					i++;
+				}
+			}
 
 			EditorGUI.LabelField (BTNodeGraph.NodeRect, showLabel, style);
 
@@ -168,6 +170,9 @@ namespace BT
 				}
 			} else if (curEvent.isMouse && curEvent.type == EventType.MouseDown && curEvent.button == 0) {
 				//点击
+				if (curEvent.mousePosition.x >= canvas.width - BTConst.RIGHT_INSPECT_WIDTH) {
+					//window.CurSelectNode = null;
+				}
 				if (BTNodeGraph.UpPointRect.Contains (curEvent.mousePosition)) {
 					curEvent.Use ();
 					if (!IsRoot) {
@@ -186,9 +191,7 @@ namespace BT
 					window.CurSelectNode = this;
 					mCanDragMove = true;
 				} else {
-					if (curEvent.mousePosition.x <= canvas.width - BTConst.LEFT_INSPECT_WIDTH) {
-						window.CurSelectNode = null;
-					}
+					window.CurSelectNode = null;
 				}
 			} else if (curEvent.isMouse && curEvent.type == EventType.MouseUp && curEvent.button == 0) {
 				//松开鼠标

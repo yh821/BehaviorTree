@@ -38,15 +38,15 @@ namespace BT
 		}
 
 
-		private static Texture _XLinePoint;
+		private static Texture _NodeEditorBG;
 
-		public static Texture XLinePoint {
+		public static Texture NodeEditorBG {
 			get {
-				if (_XLinePoint == null) {
-					_XLinePoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/Icon_ModalBox_Cross.png");
+				if (_NodeEditorBG == null) {
+					_NodeEditorBG = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/node_editor_bg.png");
 				}
 
-				return _XLinePoint;
+				return _NodeEditorBG;
 			}
 		}
 

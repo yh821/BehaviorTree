@@ -46,8 +46,7 @@ namespace BT
 		/// </summary>
 		public Rect ErrorRect {
 			get {
-				return new Rect (NodeRect.x + 5,
-					NodeRect.y + 5,
+				return new Rect (NodeRect.x + 5, NodeRect.y + 5,
 					BTConst.LINE_POINT_LENGTH, BTConst.LINE_POINT_LENGTH);
 			}
 		}
@@ -55,11 +54,10 @@ namespace BT
 		/// <summary>
 		/// 断开父节点
 		/// </summary>
-		public Rect XLineRect {
+		public static Rect NodeEditorRect {
 			get {
-				return new Rect (NodeRect.center.x - BTConst.LINE_DISABLE_LENGTH / 2,
-					NodeRect.yMin - BTConst.LINE_POINT_LENGTH + BTConst.LINE_DISABLE_LENGTH,
-					BTConst.LINE_DISABLE_LENGTH, BTConst.LINE_DISABLE_LENGTH);
+				return new Rect (BTConst.WINDOWS_WIDTH - BTConst.RIGHT_INSPECT_WIDTH - 5, 0, 
+					BTConst.RIGHT_INSPECT_WIDTH + 5, BTConst.WINDOWS_HEIGHT / 2);
 			}
 		}
 	}

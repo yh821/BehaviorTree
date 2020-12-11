@@ -7,7 +7,7 @@ namespace BT
 	{
 		#region Property
 
-		[MenuItem ("Tools/BehaviorEditor")]
+		[MenuItem ("Tools/Behavior Editor %&d")]
 		static void ShowWindow ()
 		{
 			var win = GetWindowWithRect<BTEditorWindow> (
@@ -76,7 +76,7 @@ namespace BT
 					mBehaviourTree.Update (position);
 				}
 				GUILayout.EndVertical ();
-				GUILayout.BeginVertical (GUILayout.MaxWidth (BTConst.LEFT_INSPECT_WIDTH));
+				GUILayout.BeginVertical (GUILayout.MaxWidth (BTConst.RIGHT_INSPECT_WIDTH));
 				{
 					DrawNodeInspector ();
 				}
