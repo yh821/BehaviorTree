@@ -10,18 +10,16 @@ namespace BT
 		[MenuItem ("Tools/Behavior Editor %&d")]
 		static void ShowWindow ()
 		{
-			var win = GetWindowWithRect<BTEditorWindow> (
-				          new Rect (0, 0, BTConst.WINDOWS_WIDTH, BTConst.WINDOWS_HEIGHT), false, "编辑行为树");
-			win.Initialize ();
+			mWindow = GetWindow<BTEditorWindow> ("行为树编辑器");
+			mWindow.Initialize ();
 		}
 
 		private static BTEditorWindow mWindow = null;
 
 		public static BTEditorWindow window {
 			get { 
-				if (mWindow == null) {
-					mWindow = GetWindowWithRect<BTEditorWindow> (new Rect (0, 0, BTConst.WINDOWS_WIDTH, BTConst.WINDOWS_HEIGHT), false, "行为树编辑器");
-				}
+				if (mWindow == null)
+					ShowWindow ();
 				return mWindow; 
 			}
 		}

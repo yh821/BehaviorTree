@@ -50,15 +50,5 @@ namespace BT
 					BTConst.LINE_POINT_LENGTH, BTConst.LINE_POINT_LENGTH);
 			}
 		}
-
-		/// <summary>
-		/// 断开父节点
-		/// </summary>
-		public static Rect NodeEditorRect {
-			get {
-				return new Rect (BTConst.WINDOWS_WIDTH - BTConst.RIGHT_INSPECT_WIDTH - 5, 0, 
-					BTConst.RIGHT_INSPECT_WIDTH + 5, BTConst.WINDOWS_HEIGHT / 2);
-			}
-		}
 	}
 }

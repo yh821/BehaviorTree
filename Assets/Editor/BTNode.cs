@@ -96,24 +96,6 @@ namespace BT
 
 		private void DrawNode ()
 		{
-			GUIStyle style = IsSelected ? Type.SelectStyle : Type.NormalStyle;
-			string showLabel = Data.displayName;
-			if (Data.data != null && Data.data.Count == 1) {
-				var first = Data.data.First ();
-				showLabel = string.Format ("{0}\n{1}:{2}", showLabel, first.Key, first.Value);
-			} else if (Data.data != null && Data.data.Count >= 2) {
-				int i = 0;
-				foreach (var data in Data.data) {
-					if (i < 2)
-						showLabel = string.Format ("{0}\n{1}:{2}", showLabel, data.Key, data.Value);
-					else
-						break;
-					i++;
-				}
-			}
-
-			EditorGUI.LabelField (BTNodeGraph.NodeRect, showLabel, style);
-
 			if (IsHaveChild) {
 				mBzStartPos = BTNodeGraph.DownPointRect.center;
 				foreach (var node in ChildNodeList) {
@@ -134,6 +116,10 @@ namespace BT
 				//Handles.DrawLine (startPos, endPos);
 			}
 
+			if (!IsRoot && !IsHaveParent) {
+				GUI.DrawTexture (BTNodeGraph.UpPointRect, BTNodeStyle.ErrorPoint);
+			}
+
 			if (!IsTask) {
 				if (Type.IsValid == ErrorType.Error)
 					GUI.DrawTexture (BTNodeGraph.DownPointRect, BTNodeStyle.ErrorPoint);
@@ -141,9 +127,25 @@ namespace BT
 					GUI.DrawTexture (BTNodeGraph.DownPointRect, BTNodeStyle.LinePoint);
 			}
 
-			if (!IsRoot && !IsHaveParent) {
-				GUI.DrawTexture (BTNodeGraph.UpPointRect, BTNodeStyle.ErrorPoint);
+			GUIStyle style = IsSelected ? Type.SelectStyle : Type.NormalStyle;
+			string showLabel = Data.displayName;
+			if (Data.data == null) {
+				showLabel = string.Format ("\n{0}", showLabel);
+			} else if (Data.data != null && Data.data.Count == 1) {
+				var first = Data.data.First ();
+				showLabel = string.Format ("{0}\n{1}:{2}", showLabel, first.Key, first.Value);
+			} else if (Data.data != null && Data.data.Count >= 2) {
+				int i = 0;
+				foreach (var data in Data.data) {
+					if (i < 2)
+						showLabel = string.Format ("{0}\n{1}:{2}", showLabel, data.Key, data.Value);
+					else
+						break;
+					i++;
+				}
 			}
+
+			EditorGUI.LabelField (BTNodeGraph.NodeRect, showLabel, style);
 		}
 
 		/// <summary>
@@ -160,20 +162,20 @@ namespace BT
 					mIsDragging = true;
 					window.CurSelectNode = this;
 
-					Vector2 delta;
-					if (BTEditorWindow.IsLockAxisY)
-						delta = new Vector2 (curEvent.delta.x, 0);
-					else
-						delta = curEvent.delta;
+					//Vector2 delta;
+					//if (BTEditorWindow.IsLockAxisY)
+					//	delta = new Vector2 (curEvent.delta.x, 0);
+					//else
+					//	delta = curEvent.delta;
 					
-					UpdateNodePosition (this, delta);
+					UpdateNodePosition (this, curEvent.delta);
 				}
 			} else if (curEvent.isMouse && curEvent.type == EventType.MouseDown && curEvent.button == 0) {
 				//点击
 				if (curEvent.mousePosition.x >= canvas.width - BTConst.RIGHT_INSPECT_WIDTH) {
 					//window.CurSelectNode = null;
 				}
-				if (BTNodeGraph.UpPointRect.Contains (curEvent.mousePosition)) {
+				else if (BTNodeGraph.UpPointRect.Contains (curEvent.mousePosition)) {
 					curEvent.Use ();
 					if (!IsRoot) {
 						if (IsHaveParent) {
@@ -196,11 +198,11 @@ namespace BT
 			} else if (curEvent.isMouse && curEvent.type == EventType.MouseUp && curEvent.button == 0) {
 				//松开鼠标
 				if (mIsDragging) {
-					mIsDragging = false;
 					curEvent.Use ();
-					if (BTEditorWindow.IsAutoAlign) {
-						SetNodePosition (this);
-					}
+					mIsDragging = false;
+					//if (BTEditorWindow.IsAutoAlign) {
+					SetNodePosition (this);
+					//}
 				}
 
 				if (mIsLinkParent) {
@@ -248,6 +250,10 @@ namespace BT
 			string name = obj.ToString ();
 			if (name == "Delete")
 				BTHelper.RemoveChild (this);
+			else if (name == "Copy")
+				BTEditorWindow.CopyNode = this;
+			else if (name == "Paste")
+				BTHelper.PasteChild (Owner, this, Data.posX, Data.posY + BTConst.DefaultHeight);
 			else {
 				var node = BTHelper.AddChild (Owner, this, name);
 				BTHelper.SetNodeDefaultData (node, name);

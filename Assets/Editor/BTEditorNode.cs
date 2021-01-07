@@ -21,16 +21,17 @@ namespace BT
 		private Dictionary<string, string> mChangeDict = new Dictionary<string, string> ();
 
 		private string mLastNodeGuid = string.Empty;
+		private bool mIsSettingNode = false;
 
-		public static bool IsAutoAlign = true;
-		public static bool IsLockAxisY = false;
+		//public static bool IsAutoAlign = true;
+		//public static bool IsLockAxisY = false;
+
+		public static BTNode CopyNode = null;
 
 		void DrawNodeInspector ()
 		{
-			GUI.DrawTexture (BTNodeGraph.NodeEditorRect, BTNodeStyle.NodeEditorBG);
-
-			GUILayout.Space (SPACE_VALUE);
-			EditorGUILayout.HelpBox (string.Format ("编辑行为树:{0}", mBehaviourTree.Name), MessageType.Info, true);
+			GUI.DrawTexture (new Rect (position.width - BTConst.RIGHT_INSPECT_WIDTH - 5, 0, 
+				BTConst.RIGHT_INSPECT_WIDTH + 5, 500), BTNodeStyle.NodeEditorBG);
 
 			GUILayout.Space (SPACE_VALUE);
 			//EditorGUILayout.BeginHorizontal ();
@@ -41,11 +42,14 @@ namespace BT
 			//EditorGUILayout.EndHorizontal ();
 			EditorGUILayout.BeginHorizontal ();
 			{
-				if (GUILayout.Button ("JsonBT目录", GUILayout.MaxWidth (80))) {
+				if (GUILayout.Button ("JsonBT目录")) {
 					System.Diagnostics.Process.Start (BTHelper.jsonPath);
 				}
-				if (GUILayout.Button ("LuaBT目录", GUILayout.MaxWidth (80))) {
+				if (GUILayout.Button ("LuaBT目录")) {
 					System.Diagnostics.Process.Start (BTHelper.behaviorPath);
+				}
+				if (GUILayout.Button ("Node配置")) {
+					BTEditorOption.ShowWindow ();
 				}
 			}
 			EditorGUILayout.EndHorizontal ();
@@ -70,41 +74,62 @@ namespace BT
 				mBehaviourTree = new BehaviourTree (DEFAULE_BT_NAME);
 			}
 
-			GUILayout.Space (SPACE_VALUE);
-			
+			GUILayout.Space (SPACE_VALUE);			
 			EditorGUIUtility.labelWidth = 40;
 			if (mAllShowJsons != null && mAllShowJsons.Length > 0)
 				mCurSelectJson = EditorGUILayout.Popup ("行为树:", mCurSelectJson, mAllShowJsons);
 			EditorGUIUtility.labelWidth = 60;
 
-			EditorGUILayout.LabelField ("行为树数据");
-			if (mBehaviourTree != null) {
-				mBehaviourTree.Name = EditorGUILayout.TextField ("行为树名:", mBehaviourTree.Name);
-			}
+			GUILayout.Space (SPACE_VALUE);
+			EditorGUILayout.BeginVertical ("Box");
+			{
+				EditorGUILayout.LabelField ("行为树数据");
+				if (mBehaviourTree != null) {
+					mBehaviourTree.Name = EditorGUILayout.TextField ("行为树名:", mBehaviourTree.Name);
+				}
 
-			GUI.color = Color.green;
-			if (GUILayout.Button ("保存行为树")) {
-				if (mBehaviourTree.OrphanNodeDict.Count > 0)
-					EditorUtility.DisplayDialog ("提示", "有节点未连上", "确定");
-				else
-					BTHelper.SaveBTData (mBehaviourTree);
+				GUI.color = Color.green;
+				if (GUILayout.Button ("保存行为树")) {
+					if (mBehaviourTree.OrphanNodeDict.Count > 0)
+						EditorUtility.DisplayDialog ("提示", "有节点未连上", "确定");
+					else
+						BTHelper.SaveBTData (mBehaviourTree);
+				}
+				GUI.color = Color.white;
 			}
-			GUI.color = Color.white;
+			EditorGUILayout.EndVertical ();
 
 			GUILayout.Space (SPACE_VALUE);
-
-			EditorGUILayout.LabelField ("节点数据");
 			var node = window.CurSelectNode;
 			if (node != null) {
 				var data = node.Data;
-				data.displayName = EditorGUILayout.TextField ("显示名:", data.displayName);
-				EditorGUILayout.LabelField ("节点名:", data.name);
-				if (node.Guid != mLastNodeGuid) {
-					mLastNodeGuid = node.Guid;
-					mChangeDict.Clear ();
+				EditorGUILayout.BeginHorizontal ();
+
+				if (mIsSettingNode) {
+					EditorGUILayout.LabelField ("节点说明", GUILayout.MaxWidth (50));
+					data.desc = EditorGUILayout.TextArea (data.desc, GUILayout.MaxWidth (BTConst.RIGHT_INSPECT_WIDTH));
+				} else {
+					EditorGUILayout.HelpBox (data.desc, MessageType.Info);
 				}
 
-				DrawDataInspector (data);
+				if (GUILayout.Button (mIsSettingNode ? "ok" : "set", GUILayout.MaxWidth (30)))
+					mIsSettingNode = !mIsSettingNode;
+				EditorGUILayout.EndHorizontal ();
+
+				GUILayout.Space (SPACE_VALUE);
+				EditorGUILayout.BeginVertical ("Box");
+				{
+					EditorGUILayout.LabelField ("节点数据");
+					data.displayName = EditorGUILayout.TextField ("显示名:", data.displayName);
+					EditorGUILayout.LabelField ("节点名:", data.name);
+					if (node.Guid != mLastNodeGuid) {
+						mLastNodeGuid = node.Guid;
+						mChangeDict.Clear ();
+					}
+
+					DrawDataInspector (data);
+				}
+				EditorGUILayout.EndVertical ();
 			}
 		}
 
@@ -146,7 +171,7 @@ namespace BT
 			EditorGUILayout.BeginHorizontal ();
 			{
 				mKey = EditorGUILayout.TextField ("key:", mKey);
-				mValue = EditorGUILayout.TextField ("value:", mValue, GUILayout.MaxWidth (80));
+				mValue = EditorGUILayout.TextField ("val:", mValue);
 				if (GUILayout.Button ("+", GUILayout.MaxWidth (20))) {
 					if (!string.IsNullOrEmpty (mKey)) {
 						data.AddData (mKey, mValue);

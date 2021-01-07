@@ -24,19 +24,8 @@ namespace BT
 		/// </summary>
 		public const int NormalTaskCanAddNode = 0;
 
-		/// <summary>
-		/// 窗口默认尺寸
-		/// </summary>
-		public const float WINDOWS_WIDTH = 1280;
-		public const float WINDOWS_HEIGHT = 768;
-
 		//贝塞尔曲线相关
 		public const int BEZIER_WIDTH = 3;
-
-		/// <summary>
-		/// 取消连线的按钮大小
-		/// </summary>
-		public const float LINE_DISABLE_LENGTH = 8;
 
 		/// <summary>
 		/// 连接点半径
@@ -46,7 +35,7 @@ namespace BT
 		/// <summary>
 		/// 左侧监视面板宽度
 		/// </summary>
-		public const float RIGHT_INSPECT_WIDTH = 240;
+		public const float RIGHT_INSPECT_WIDTH = 230;
 
 		/// <summary>
 		/// 节点默认宽度
@@ -73,6 +62,7 @@ namespace BT
 	public class BTNodeData
 	{
 		public string displayName = string.Empty;
+		public string desc = string.Empty;
 		public string name = string.Empty;
 		public string type = string.Empty;
 		public float posX = 0;
@@ -112,6 +102,15 @@ namespace BT
 		{
 			if (data != null && data.ContainsKey (key))
 				data.Remove (key);
+		}
+
+		public BTNodeData Clone ()
+		{
+			BTNodeData clone = new BTNodeData (name, type, posX, posY);
+			clone.displayName = displayName;
+			if (data != null)
+				clone.data = new Dictionary<string, string> (data);
+			return clone;
 		}
 	}
 
@@ -153,8 +152,6 @@ namespace BT
 			}
 		}
 
-		static private string _nodePath = string.Empty;
-
 		static public string nodePath {
 			get {
 				if (string.IsNullOrEmpty (_nodePath)) {
@@ -165,7 +162,19 @@ namespace BT
 			}
 		}
 
+		private static string _nodePath = string.Empty;
+
 		private static Dictionary<string, string> mNodeTypeDict = new Dictionary<string, string> ();
+
+		public static Dictionary<string, Dictionary<string, string>>NodeOptions {
+			get {
+				if (mNodeOptions == null)
+					mNodeOptions = ReadBTNodeOption ();
+				return mNodeOptions;
+			}
+		}
+
+		private static Dictionary<string, Dictionary<string,string>> mNodeOptions;
 
 		public static string GenerateUniqueStringId ()
 		{
@@ -193,13 +202,25 @@ namespace BT
 					content = content.Replace (m.Value, "");
 				}
 
-				mc = Regex.Matches (content, "= \"\\d+\",?");
+				mc = Regex.Matches (content, "= \"[\\d.]+\",?");
 				foreach (Match m in mc) {
 					string word = m.Value.Replace ("\"", "");
 					content = content.Replace (m.Value, word);
 				}
 
+				mc = Regex.Matches (content, "= \"{\\S+}\"");
+				foreach (Match m in mc) {
+					string word = m.Value.Replace ("\\", "");
+					word = " =" + word.Substring (3, word.Length - 4);
+					content = content.Replace (m.Value, word);
+				}
+
 				mc = Regex.Matches (content, "\\s*displayName= [^\\s}]+,?");
+				foreach (Match m in mc) {
+					content = content.Replace (m.Value, "");
+				}
+
+				mc = Regex.Matches (content, "\\s*desc= [^\\s}]+,?");
 				foreach (Match m in mc) {
 					content = content.Replace (m.Value, "");
 				}
@@ -245,6 +266,23 @@ namespace BT
 			return tree;
 		}
 
+		public static Dictionary<string,Dictionary<string,string>>ReadBTNodeOption ()
+		{
+			var file = Path.Combine (Application.dataPath, "Editor/BTNodeDefaultOption.json");
+			if (File.Exists (file)) {
+				var content = File.ReadAllText (file);
+				return JsonConvert.DeserializeObject<Dictionary<string,Dictionary<string,string>>> (content);
+			}
+			return new Dictionary<string, Dictionary<string, string>> ();
+		}
+
+		public static void WriteBTNodeOption (Dictionary<string,Dictionary<string,string>> data)
+		{
+			var content = JsonConvert.SerializeObject (data, Formatting.Indented);
+			File.WriteAllText (Path.Combine (Application.dataPath, "Editor/BTNodeDefaultOption.json"), content);
+			mNodeOptions = null;
+		}
+
 		public static void WalkJsonData (BehaviourTree owner, BTNode parent)
 		{
 			var childrenData = parent.Data.children;
@@ -265,6 +303,15 @@ namespace BT
 				           pos.y + BTConst.DefaultHeight + BTConst.DefaultSpacingY);
 			parent.Data.AddChild (data);
 			return AddChild (owner, parent, data);
+		}
+
+		public static BTNode PasteChild (BehaviourTree owner, BTNode parent, float x, float y)
+		{
+			var nodeData = BTEditorWindow.CopyNode.Data.Clone ();
+			nodeData.posX = x;
+			nodeData.posY = y;
+			parent.Data.AddChild (nodeData);
+			return AddChild (owner, parent, nodeData);
 		}
 
 		public static BTNode AddChild (BehaviourTree owner, BTNode parent, BTNodeData data)
@@ -295,11 +342,11 @@ namespace BT
 
 		public static void AutoAlignPosition (BTNode node)
 		{
-			var width = BTConst.DefaultWidth + BTConst.DefaultSpacingX;
+			var width = (BTConst.DefaultWidth + BTConst.DefaultSpacingX) / 2;
 			var multiW = Mathf.RoundToInt (node.BTNodeGraph.RealRect.x / width);
 			float x = multiW * width;
 
-			var height = BTConst.DefaultHeight + BTConst.DefaultSpacingY;
+			var height = (BTConst.DefaultHeight + BTConst.DefaultSpacingY) / 2;
 			var multiH = Mathf.RoundToInt (node.BTNodeGraph.RealRect.y / height);
 			float y = multiH * height;
 
@@ -313,12 +360,13 @@ namespace BT
 			foreach (var fullPath in allFiles) {
 				var sortPath = fullPath.Replace ("\\", "/");
 				sortPath = sortPath.Replace (nodePath, "");
-				if (sortPath.Contains ("/common/"))
-					continue;
-				var fileName = Path.GetFileNameWithoutExtension (fullPath);
-				string type = sortPath.Substring (1, sortPath.LastIndexOf ('/') - 1);
-				mNodeTypeDict.Add (fileName, type);
-				//Debug.LogFormat ("加载lua节点:{0}", fileName);
+				if (sortPath.Contains ("/actions/") ||
+				    sortPath.Contains ("/composites/") ||
+				    sortPath.Contains ("/decorators/")) {
+					var fileName = Path.GetFileNameWithoutExtension (fullPath);
+					string type = sortPath.Substring (1, sortPath.LastIndexOf ('/') - 1);
+					mNodeTypeDict.Add (fileName, type);
+				}
 			}
 		}
 
@@ -350,10 +398,16 @@ namespace BT
 					var menuPath = string.Format ("{0}/{1}", kv.Value, data);
 					menu.AddItem (new GUIContent (menuPath), false, callback, kv.Key);
 				}
+
+				if (BTEditorWindow.CopyNode != null) {
+					menu.AddSeparator ("");
+					menu.AddItem (new GUIContent ("Paste Node"), false, callback, "Paste");
+				}
 			}
 
 			if (!node.IsRoot) {
 				menu.AddSeparator ("");
+				menu.AddItem (new GUIContent ("Copy Node"), false, callback, "Copy");
 				menu.AddItem (new GUIContent ("Delete Node"), false, callback, "Delete");
 			}
 
@@ -363,24 +417,15 @@ namespace BT
 		public static void SetNodeDefaultData (BTNode node, string name)
 		{
 			var data = node.Data;
-			switch (name) {
-			case "waitNode":
-				data.AddData ("waitMin", "2");
-				data.AddData ("waitMax", "5");
-				data.displayName = "等待时间";
-				break;
-			case "weightNode":
-				data.AddData ("weight", "10");
-				data.displayName = "几率权重";
-				break;
-			case "checkStateNode":
-				data.AddData ("stateId", "0");
-				data.displayName = "筛选状态";
-				break;
-			case "speakNode":
-				data.AddData ("say", "hello world");
-				data.displayName = "显示对话";
-				break;
+			var options = NodeOptions;
+			Dictionary<string, string> option;
+			if (options.TryGetValue (name, out option)) {
+				foreach (var kv in option) {
+					if (kv.Key == "displayName")
+						data.displayName = kv.Value;
+					else
+						data.AddData (kv.Key, kv.Value);
+				}
 			}
 		}
 

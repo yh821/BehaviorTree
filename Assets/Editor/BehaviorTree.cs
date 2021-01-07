@@ -25,17 +25,20 @@ namespace BT
 			OrphanNodeDict = new Dictionary<string, BTNode> ();
 			if (data == null) {
 				data = new BTNodeData (BTConst.RootName, null, 
-					(BTConst.WINDOWS_WIDTH - BTConst.RIGHT_INSPECT_WIDTH) / 2 - BTConst.DefaultWidth / 2, 50);
+					(BTEditorWindow.window.position.width - BTConst.RIGHT_INSPECT_WIDTH) / 2, 50);
 				data.AddData ("restart", "1");
 			}
 			Root = new BTNode (this, null, data);
 			AddNode (Root);
+			BTHelper.AutoAlignPosition (Root);
 		}
 
 		public void Update (Rect canvas)
 		{
-			foreach (var node in BTNodeDict.Values) {
-				node.Update (canvas);
+			if (BTNodeDict != null) {
+				foreach (var node in BTNodeDict.Values) {
+					node.Update (canvas);
+				}
 			}
 		}
 
@@ -56,7 +59,7 @@ namespace BT
 
 		public void RemoveOrphanNode (BTNode node)
 		{
-			if (OrphanNodeDict.ContainsKey(node.Guid))
+			if (OrphanNodeDict.ContainsKey (node.Guid))
 				OrphanNodeDict.Remove (node.Guid);
 		}
 	}
