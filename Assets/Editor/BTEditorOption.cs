@@ -108,7 +108,9 @@ namespace BT
 					mAddNode = EditorGUILayout.TextField ("新增节点:", mAddNode);
 					if (GUILayout.Button ("+", GUILayout.MaxWidth (20))) {
 						if (!string.IsNullOrEmpty (mAddNode)) {
-							mOptions.Add (mAddNode, new Dictionary<string, string> ());
+							var data = new Dictionary<string, string> ();
+							data.Add ("displayName","");
+							mOptions.Add (mAddNode, data);
 							mAddNode = null;
 						}
 					}
