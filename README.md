@@ -1,0 +1,4 @@
+# BehaviorTree
+用lua实现的行为树
+模仿behaviorDesigner编辑行为树
+导出lua文件，json保存树结构和数据
