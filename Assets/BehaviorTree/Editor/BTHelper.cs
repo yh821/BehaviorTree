@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using Common;
 using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
@@ -145,7 +144,7 @@ namespace BT
 		static public string jsonPath {
 			get {
 				if (string.IsNullOrEmpty (_jsonPath)) {
-					_jsonPath = Path.Combine (Application.dataPath, "Editor/Json");
+					_jsonPath = Path.Combine (Application.dataPath, "BehaviorTree/Editor/Json");
 					_jsonPath = _jsonPath.Replace ("\\", "/");
 				}
 				return _jsonPath;
@@ -356,14 +355,14 @@ namespace BT
 		public static void LoadNodeFile ()
 		{
 			mNodeTypeDict.Clear ();
-			var allFiles = FileHelper.GetAllFiles (nodePath, "lua");
-			foreach (var fullPath in allFiles) {
-				var sortPath = fullPath.Replace ("\\", "/");
+            var files = Directory.GetFiles(nodePath, "*.lua", SearchOption.AllDirectories);
+            foreach (var file in files) {
+				var sortPath = file.Replace ("\\", "/");
 				sortPath = sortPath.Replace (nodePath, "");
 				if (sortPath.Contains ("/actions/") ||
 				    sortPath.Contains ("/composites/") ||
 				    sortPath.Contains ("/decorators/")) {
-					var fileName = Path.GetFileNameWithoutExtension (fullPath);
+					var fileName = Path.GetFileNameWithoutExtension (file);
 					string type = sortPath.Substring (1, sortPath.LastIndexOf ('/') - 1);
 					mNodeTypeDict.Add (fileName, type);
 				}

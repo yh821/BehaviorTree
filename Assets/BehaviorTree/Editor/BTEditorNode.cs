@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Collections.Generic;
-using Common;
 using UnityEngine;
 using UnityEditor;
 
@@ -134,13 +133,12 @@ namespace BT
 		}
 
 		void LoadBehaviorTree ()
-		{
-			var files = FileHelper.GetAllFiles (BTHelper.jsonPath, "json");
+        {
+            var files = Directory.GetFiles(BTHelper.jsonPath, "*.json", SearchOption.AllDirectories);
 			var fileNames = new List<string> ();
 			foreach (var file in files) {
 				fileNames.Add (Path.GetFileNameWithoutExtension (file));
 			}
-
 			mAllShowJsons = fileNames.ToArray ();
 			mLastSelectJson = -1;
 		}

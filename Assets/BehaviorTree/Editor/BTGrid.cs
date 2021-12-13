@@ -9,7 +9,7 @@ namespace BT
 
 		public BTGrid ()
 		{
-			mBackground = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/background.png");
+			mBackground = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BehaviorTree/Editor/GUI/background.png");
 		}
 
 		/// <summary>

@@ -1,9 +1,12 @@
-
+.svn
+.vs
 .DS_Store
 .idea
 Library
 Temp
 obj
+Logs
+UserSettings
 *.csproj
 *.sln
 *.userprefs

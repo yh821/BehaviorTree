@@ -43,7 +43,7 @@ namespace BT
 		public static Texture NodeEditorBG {
 			get {
 				if (_NodeEditorBG == null) {
-					_NodeEditorBG = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/node_editor_bg.png");
+					_NodeEditorBG = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BehaviorTree/Editor/GUI/node_editor_bg.png");
 				}
 
 				return _NodeEditorBG;
@@ -55,7 +55,7 @@ namespace BT
 		public static Texture LinePoint {
 			get {
 				if (_LinePoint == null) {
-					_LinePoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/Minimap_Pin_Green.png");
+					_LinePoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BehaviorTree/Editor/GUI/Minimap_Pin_Green.png");
 				}
 
 				return _LinePoint;
@@ -67,7 +67,7 @@ namespace BT
 		public static Texture ErrorPoint {
 			get {
 				if (_ErrorPoint == null) {
-					_ErrorPoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/Minimap_Pin_Red.png");
+					_ErrorPoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BehaviorTree/Editor/GUI/Minimap_Pin_Red.png");
 				}
 
 				return _ErrorPoint;
@@ -79,7 +79,7 @@ namespace BT
 		public static Texture WarnPoint {
 			get {
 				if (_WarnPoint == null) {
-					_WarnPoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/Editor/GUI/Minimap_Pin_Yellow.png");
+					_WarnPoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BehaviorTree/Editor/GUI/Minimap_Pin_Yellow.png");
 				}
 
 				return _WarnPoint;
