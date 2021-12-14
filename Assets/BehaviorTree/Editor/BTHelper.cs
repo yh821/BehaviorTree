@@ -105,8 +105,7 @@ namespace BT
 
 		public BTNodeData Clone ()
 		{
-			BTNodeData clone = new BTNodeData (name, type, posX, posY);
-			clone.displayName = displayName;
+			var clone = new BTNodeData(name, type, posX, posY) {displayName = displayName};
 			if (data != null)
 				clone.data = new Dictionary<string, string> (data);
 			return clone;
@@ -115,9 +114,8 @@ namespace BT
 
 	public static class BTHelper
 	{
-		static private string _clientPath = string.Empty;
-
-		static public string clientPath {
+		private static string _clientPath = string.Empty;
+		public static string clientPath {
 			get {
 				if (string.IsNullOrEmpty (_clientPath)) {
 					_clientPath = Application.dataPath.Replace ("/Assets", "");
@@ -127,9 +125,8 @@ namespace BT
 			}
 		}
 
-		static private string _behaviorPath = string.Empty;
-
-		static public string behaviorPath {
+		private static string _behaviorPath = string.Empty;
+		public static string behaviorPath {
 			get {
 				if (string.IsNullOrEmpty (_behaviorPath)) {
 					_behaviorPath = Path.Combine (clientPath, "LocalFile/behaviors");
@@ -139,9 +136,8 @@ namespace BT
 			}
 		}
 
-		static private string _jsonPath = string.Empty;
-
-		static public string jsonPath {
+		private static string _jsonPath = string.Empty;
+		public static string jsonPath {
 			get {
 				if (string.IsNullOrEmpty (_jsonPath)) {
 					_jsonPath = Path.Combine (Application.dataPath, "BehaviorTree/Editor/Json");
@@ -151,7 +147,8 @@ namespace BT
 			}
 		}
 
-		static public string nodePath {
+		private static string _nodePath = string.Empty;
+		public static string nodePath {
 			get {
 				if (string.IsNullOrEmpty (_nodePath)) {
 					_nodePath = Path.Combine (clientPath, "LocalFile/lua");
@@ -160,8 +157,6 @@ namespace BT
 				return _nodePath;
 			}
 		}
-
-		private static string _nodePath = string.Empty;
 
 		private static Dictionary<string, string> mNodeTypeDict = new Dictionary<string, string> ();
 

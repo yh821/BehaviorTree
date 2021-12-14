@@ -89,7 +89,7 @@ namespace BT
 
 				GUI.color = Color.green;
 				if (GUILayout.Button ("保存行为树")) {
-					if (mBehaviourTree.OrphanNodeDict.Count > 0)
+					if (mBehaviourTree != null && mBehaviourTree.OrphanNodeDict.Count > 0)
 						EditorUtility.DisplayDialog ("提示", "有节点未连上", "确定");
 					else
 						BTHelper.SaveBTData (mBehaviourTree);
