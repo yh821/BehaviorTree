@@ -3,92 +3,104 @@ using UnityEditor;
 
 namespace BT
 {
-	public partial class BTEditorWindow : EditorWindow
+	public partial class BtEditorWindow : EditorWindow
 	{
 		#region Property
 
-		[MenuItem ("Tools/Behavior Editor %&d")]
-		static void ShowWindow ()
+		[MenuItem("Tools/Behavior Editor %&d")]
+		public static void ShowWindow()
 		{
-			mWindow = GetWindow<BTEditorWindow> ("行为树编辑器");
-			mWindow.Initialize ();
+			mWindow = GetWindow<BtEditorWindow>("行为树编辑器");
+			mWindow.Initialize();
 		}
 
-		private static BTEditorWindow mWindow = null;
+		private static BtEditorWindow mWindow = null;
 
-		public static BTEditorWindow window {
-			get { 
+		public static BtEditorWindow Window
+		{
+			get
+			{
 				if (mWindow == null)
-					ShowWindow ();
-				return mWindow; 
+					ShowWindow();
+				return mWindow;
 			}
 		}
 
 		/// <summary>
 		/// 当前移动坐标 鼠标拖拽背景偏移
 		/// </summary>
-		public Vector2 Position { get { return mPosition; } set { mPosition = value; } }
+		public Vector2 Position { get; set; } = Vector2.zero;
 
-		private Vector2 mPosition = Vector2.zero;
-
-		public Event Event {
-			get { 
-				if (Event.current == null) {
-					Event evt = new Event { type = EventType.Ignore };
-					return evt;
-				}
-				return Event.current;
+		public Event Event
+		{
+			get
+			{
+				if (Event.current != null) return Event.current;
+				var evt = new Event {type = EventType.Ignore};
+				return evt;
 			}
 		}
 
-		public BTNode CurSelectNode { get; set; }
+		public BtNode CurSelectNode { get; set; }
 
 		#endregion
 
-		[HideInInspector] public BTGrid BTGrid;
+		[HideInInspector] public BtGrid BtGrid;
 
 		private BehaviourTree mBehaviourTree;
 
-		public void Initialize ()
+		public void Initialize()
 		{
-			if (mBehaviourTree == null) {
-				mBehaviourTree = new BehaviourTree (); 
-			}
+			if (mBehaviourTree == null)
+				mBehaviourTree = new BehaviourTree();
 
-			if (BTGrid == null) {
-				BTGrid = new BTGrid ();
-			}
+			if (BtGrid == null)
+				BtGrid = new BtGrid();
 
-			BTHelper.LoadNodeFile ();
+			BtHelper.LoadNodeFile();
 
-			LoadBehaviorTree ();
+			LoadBehaviorTree();
 		}
 
-		void OnGUI ()
+		void OnGUI()
 		{
-			BTGrid.DrawGrid (position.size);
-			GUILayout.BeginHorizontal ();
+			BtGrid.DrawGrid(position.size);
+			GUILayout.BeginHorizontal();
 			{
-				GUILayout.BeginVertical ();
+				GUILayout.BeginVertical();
 				{
-					mBehaviourTree.Update (position);
+					mBehaviourTree.Update(position);
 				}
-				GUILayout.EndVertical ();
-				GUILayout.BeginVertical (GUILayout.MaxWidth (BTConst.RIGHT_INSPECT_WIDTH));
+				GUILayout.EndVertical();
+				GUILayout.BeginVertical(GUILayout.MaxWidth(BtConst.RightInspectWidth));
 				{
-					DrawNodeInspector ();
+					DrawNodeInspector();
 				}
-				GUILayout.EndVertical ();
+				GUILayout.EndVertical();
 			}
-			GUILayout.EndHorizontal ();
+			GUILayout.EndHorizontal();
+
+			if (Event.type == EventType.KeyUp)
+			{
+				if (Event.keyCode == KeyCode.Delete)
+				{
+					if (CurSelectNode != null && !CurSelectNode.IsRoot)
+					{
+						Event.Use();
+						BtHelper.RemoveChild(CurSelectNode);
+					}
+				}
+			}
 		}
 
-		public BTNode GetMouseTriggerDownPoint (Vector2 mousePos)
+		public BtNode GetMouseTriggerDownPoint(Vector2 mousePos)
 		{
-			foreach (var node in mBehaviourTree.BTNodeDict.Values) {
-				if (node.BTNodeGraph.DownPointRect.Contains (mousePos))
+			foreach (var node in mBehaviourTree.NodeDict.Values)
+			{
+				if (node.BtNodeGraph.DownPointRect.Contains(mousePos))
 					return node;
 			}
+
 			return null;
 		}
 	}

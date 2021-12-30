@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BT
 {
-	public enum BTNodeEnum
+	public enum BtNodeEnum
 	{
 		Composite,
 		Decorator,
@@ -18,17 +18,17 @@ namespace BT
 	}
 
 	[Serializable]
-	public abstract class BTNodeType
+	public abstract class BtNodeType
 	{
 		/// <summary>
 		/// 归属图形化节点
 		/// </summary>
-		protected BTNode BelongNode { get; set; }
+		protected BtNode BelongNode { get; set; }
 
 		/// <summary>
 		/// 节点类型
 		/// </summary>
-		public abstract BTNodeEnum Type { get; }
+		public abstract BtNodeEnum Type { get; }
 
 		/// <summary>
 		/// 节点是否有效
@@ -45,104 +45,70 @@ namespace BT
 
 		public abstract GUIStyle SelectStyle { get; }
 
-		protected BTNodeType (BTNode node)
+		protected BtNodeType(BtNode node)
 		{
 			BelongNode = node;
 		}
 	}
 
-	public class Decorator : BTNodeType
+	public class Decorator : BtNodeType
 	{
-		public override BTNodeEnum Type {
-			get { return BTNodeEnum.Decorator; }
-		}
+		public override BtNodeEnum Type => BtNodeEnum.Decorator;
 
-		public override int CanAddNodeCount {
-			get { return BTConst.NormalDecoratorCanAddNode; }
-		}
+		public override int CanAddNodeCount => BtConst.NormalDecoratorCanAddNode;
 
-		public override GUIStyle NormalStyle {
-			get { return BTNodeStyle.DecoratorStyle; }
-		}
+		public override GUIStyle NormalStyle => BtNodeStyle.DecoratorStyle;
 
-		public override GUIStyle SelectStyle {
-			get { return BTNodeStyle.SelectDecoratorStyle; }
-		}
+		public override GUIStyle SelectStyle => BtNodeStyle.SelectDecoratorStyle;
 
-		public override ErrorType IsValid {
-			get{ return BelongNode.ChildNodeList.Count == 1 ? ErrorType.None : ErrorType.Error; }
-		}
+		public override ErrorType IsValid => BelongNode.ChildNodeList.Count == 1 ? ErrorType.None : ErrorType.Error;
 
-		public Decorator (BTNode node) : base (node)
+		public Decorator(BtNode node) : base(node)
 		{
 		}
 	}
 
 	public class Root : Decorator
 	{
-		public override GUIStyle NormalStyle {
-			get { return BTNodeStyle.RootStyle; }
-		}
+		public override GUIStyle NormalStyle => BtNodeStyle.RootStyle;
 
-		public override GUIStyle SelectStyle {
-			get { return BTNodeStyle.SelectRootStyle; }
-		}
+		public override GUIStyle SelectStyle => BtNodeStyle.SelectRootStyle;
 
-		public Root (BTNode node) : base (node)
+		public Root(BtNode node) : base(node)
 		{
 		}
 	}
 
-	public class Composite : BTNodeType
+	public class Composite : BtNodeType
 	{
-		public override BTNodeEnum Type {
-			get { return BTNodeEnum.Composite; }
-		}
+		public override BtNodeEnum Type => BtNodeEnum.Composite;
 
-		public override int CanAddNodeCount {
-			get { return BTConst.NormalCompositeCanAddNode; }
-		}
+		public override int CanAddNodeCount => BtConst.NormalCompositeCanAddNode;
 
-		public override GUIStyle NormalStyle {
-			get { return BTNodeStyle.CompositeStyle; }
-		}
+		public override GUIStyle NormalStyle => BtNodeStyle.CompositeStyle;
 
-		public override GUIStyle SelectStyle {
-			get { return BTNodeStyle.SelectCompositeStyle; }
-		}
+		public override GUIStyle SelectStyle => BtNodeStyle.SelectCompositeStyle;
 
-		public override ErrorType IsValid {
-			get { return BelongNode.IsHaveChild ? ErrorType.None : ErrorType.Error; }
-		}
+		public override ErrorType IsValid => BelongNode.IsHaveChild ? ErrorType.None : ErrorType.Error;
 
-		public Composite (BTNode node) : base (node)
+		public Composite(BtNode node) : base(node)
 		{
 		}
 	}
 
-	public class Task : BTNodeType
+	public class Task : BtNodeType
 	{
-		public override BTNodeEnum Type {
-			get { return BTNodeEnum.Task; }
-		}
+		public override BtNodeEnum Type => BtNodeEnum.Task;
 
-		public override int CanAddNodeCount {
-			get { return BTConst.NormalTaskCanAddNode; }
-		}
+		public override int CanAddNodeCount => BtConst.NormalTaskCanAddNode;
 
-		public override GUIStyle NormalStyle {
-			get { return BTNodeStyle.TaskStyle; }
-		}
+		public override GUIStyle NormalStyle => BtNodeStyle.TaskStyle;
 
-		public override GUIStyle SelectStyle {
-			get { return BTNodeStyle.SelectTaskStyle; }
-		}
+		public override GUIStyle SelectStyle => BtNodeStyle.SelectTaskStyle;
 
-		public override ErrorType IsValid {
-			get { return ErrorType.None; }
-		}
+		public override ErrorType IsValid => ErrorType.None;
 
-		public Task (BTNode node) : base (node)
+		public Task(BtNode node) : base(node)
 		{
 		}
 	}

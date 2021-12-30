@@ -3,89 +3,47 @@ using UnityEngine;
 
 namespace BT
 {
-	public static class BTNodeStyle
+	public static class BtNodeStyle
 	{
-		public static GUIStyle RootStyle {
-			get { return "flow node 0"; }
-		}
+		private static Texture _nodeEditorBg;
 
-		public static GUIStyle SelectRootStyle {
-			get { return "flow node 0 on"; }
-		}
-
-		public static GUIStyle DecoratorStyle {
-			get { return "flow node 2"; }
-		}
-
-		public static GUIStyle SelectDecoratorStyle {
-			get { return "flow node 2 on"; }
-		}
-
-		public static GUIStyle CompositeStyle {
-			get { return "flow node 1"; }
-		}
-
-		public static GUIStyle SelectCompositeStyle {
-			get { return "flow node 1 on"; }
-		}
-
-		public static GUIStyle TaskStyle {
-			get { return "flow node 3"; }
-		}
-
-		public static GUIStyle SelectTaskStyle {
-			get { return "flow node 3 on"; }
-		}
-
-
-		private static Texture _NodeEditorBG;
-
-		public static Texture NodeEditorBG {
-			get {
-				if (_NodeEditorBG == null) {
-					_NodeEditorBG = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BehaviorTree/Editor/GUI/node_editor_bg.png");
+		public static Texture NodeEditorBg
+		{
+			get
+			{
+				if (_nodeEditorBg == null)
+				{
+					var path = BtHelper.ModulePath(false) + "/Editor/GUI/node_editor_bg.png";
+					_nodeEditorBg = AssetDatabase.LoadAssetAtPath<Texture>(path);
 				}
 
-				return _NodeEditorBG;
+				return _nodeEditorBg;
 			}
 		}
 
-		private static Texture _LinePoint;
+		public static GUIStyle RootStyle => "flow node 0";
 
-		public static Texture LinePoint {
-			get {
-				if (_LinePoint == null) {
-					_LinePoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BehaviorTree/Editor/GUI/Minimap_Pin_Green.png");
-				}
+		public static GUIStyle SelectRootStyle => "flow node 0 on";
 
-				return _LinePoint;
-			}
-		}
+		public static GUIStyle DecoratorStyle => "flow node 2";
 
-		private static Texture _ErrorPoint;
+		public static GUIStyle SelectDecoratorStyle => "flow node 2 on";
 
-		public static Texture ErrorPoint {
-			get {
-				if (_ErrorPoint == null) {
-					_ErrorPoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BehaviorTree/Editor/GUI/Minimap_Pin_Red.png");
-				}
+		public static GUIStyle CompositeStyle => "flow node 1";
 
-				return _ErrorPoint;
-			}
-		}
+		public static GUIStyle SelectCompositeStyle => "flow node 1 on";
 
-		private static Texture _WarnPoint;
+		public static GUIStyle TaskStyle => "flow node 3";
 
-		public static Texture WarnPoint {
-			get {
-				if (_WarnPoint == null) {
-					_WarnPoint = AssetDatabase.LoadAssetAtPath<Texture> ("Assets/BehaviorTree/Editor/GUI/Minimap_Pin_Yellow.png");
-				}
+		public static GUIStyle SelectTaskStyle => "flow node 3 on";
 
-				return _WarnPoint;
-			}
-		}
+		private static GUIContent _LinePoint;
+		public static GUIContent LinePoint => _LinePoint ??= EditorGUIUtility.IconContent("sv_icon_dot3_pix16_gizmo");
 
-		private static GUIStyle style;
+		private static GUIContent _WarnPoint;
+		public static GUIContent WarnPoint => _WarnPoint ??= EditorGUIUtility.IconContent("sv_icon_dot4_pix16_gizmo");
+
+		private static GUIContent _ErrorPoint;
+		public static GUIContent ErrorPoint => _ErrorPoint ??= EditorGUIUtility.IconContent("sv_icon_dot6_pix16_gizmo");
 	}
 }
