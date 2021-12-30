@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using Common;
 using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
@@ -11,52 +10,64 @@ namespace BT
 {
 	public static class BtHelper
 	{
+		private static string _gamePath = string.Empty;
 		private static string _moduleAbsPath = string.Empty;
 		private static string _modulePath = string.Empty;
+		private static string _behaviorPath = string.Empty;
+		private static string _jsonPath = string.Empty;
+		private static string _nodePath = string.Empty;
 
-		public static string ModulePath(bool isAP = true)
+        public static string GamePath
 		{
-			if (string.IsNullOrEmpty(_moduleAbsPath))
+			get
 			{
-				_moduleAbsPath = GamePath.rootPath + "/Assets/BehaviorTree";
+				if (string.IsNullOrEmpty(_gamePath))
+				{
+					_gamePath = Path.Combine(Application.dataPath, "Game");
+					_gamePath = _gamePath.Replace('\\', '/');
+				}
+
+				return _gamePath;
+			}
+		}
+
+		public static string ModulePath(bool isAp = false)
+		{
+			if (string.IsNullOrEmpty(_modulePath))
+			{
+				_moduleAbsPath = Application.dataPath.Replace('\\', '/') + "/BehaviorTree";
 				_modulePath = "Assets/BehaviorTree";
 			}
 
-			return isAP ? _moduleAbsPath : _modulePath;
+			return isAp ? _moduleAbsPath : _modulePath;
 		}
-
-		private static string _behaviorPath = string.Empty;
 
 		public static string behaviorPath
 		{
 			get
 			{
 				if (string.IsNullOrEmpty(_behaviorPath))
-					_behaviorPath = GamePath.luaPath + "/behaviors";
+					_behaviorPath = GamePath + "/Lua/behaviors";
 				return _behaviorPath;
 			}
 		}
-
-		private static string _jsonPath = string.Empty;
 
 		public static string jsonPath
 		{
 			get
 			{
 				if (string.IsNullOrEmpty(_jsonPath))
-					_jsonPath = ModulePath() + "/Editor/Json";
+					_jsonPath = ModulePath(true) + "/Editor/Json";
 				return _jsonPath;
 			}
 		}
-
-		private static string _nodePath = string.Empty;
 
 		public static string nodePath
 		{
 			get
 			{
 				if (string.IsNullOrEmpty(_nodePath))
-					_nodePath = GamePath.luaPath + "/nodes";
+					_nodePath = GamePath + "/Lua/nodes";
 				return _nodePath;
 			}
 		}

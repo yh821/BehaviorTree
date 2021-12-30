@@ -33,7 +33,6 @@ namespace BT
 			GUI.DrawTexture(new Rect(position.width - BtConst.RightInspectWidth - 5, 0,
 				BtConst.RightInspectWidth + 5, 500), BtNodeStyle.NodeEditorBg);
 
-			GUILayout.Space(SPACE_VALUE);
 			EditorGUILayout.BeginHorizontal();
 			{
 				IsDebug = GUILayout.Toggle(IsDebug, "是否调试", GUILayout.MaxWidth(80));
@@ -41,6 +40,8 @@ namespace BT
 				//IsLockAxisY = GUILayout.Toggle(IsLockAxisY, "锁定Y轴", GUILayout.MaxWidth(80));
 			}
 			EditorGUILayout.EndHorizontal();
+
+			GUILayout.Space(SPACE_VALUE);
 			EditorGUILayout.BeginHorizontal();
 			{
 				if (GUILayout.Button("JsonBT目录"))

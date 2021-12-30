@@ -13,7 +13,7 @@ namespace BT
 			{
 				if (_nodeEditorBg == null)
 				{
-					var path = BtHelper.ModulePath(false) + "/Editor/GUI/node_editor_bg.png";
+					var path = BtHelper.ModulePath() + "/Editor/GUI/node_editor_bg.png";
 					_nodeEditorBg = AssetDatabase.LoadAssetAtPath<Texture>(path);
 				}
 

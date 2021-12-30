@@ -9,7 +9,7 @@ namespace BT
 
 		public BtGrid()
 		{
-			var path = BtHelper.ModulePath(false) + "/Editor/GUI/background.png";
+			var path = BtHelper.ModulePath() + "/Editor/GUI/background.png";
 			mBackground = AssetDatabase.LoadAssetAtPath<Texture>(path);
 		}
 
