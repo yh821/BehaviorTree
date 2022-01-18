@@ -1,0 +1,6 @@
+{
+    "writablePath": "Cache",
+    "logPath": "Logs",
+    "cachePath": "Cache",
+    "luaPath": "Assets/Game/Lua"
+}

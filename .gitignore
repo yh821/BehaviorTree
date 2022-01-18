@@ -10,3 +10,5 @@ UserSettings
 *.csproj
 *.sln
 *.userprefs
+Assets/CommonTools
+Assets/CommonTools.meta
