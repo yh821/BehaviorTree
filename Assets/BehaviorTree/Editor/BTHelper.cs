@@ -10,44 +10,29 @@ namespace BT
 {
 	public static class BtHelper
 	{
-		private static string _gamePath = string.Empty;
-		private static string _moduleAbsPath = string.Empty;
-		private static string _modulePath = string.Empty;
+		private static string _toolPath = string.Empty;
 		private static string _behaviorPath = string.Empty;
 		private static string _jsonPath = string.Empty;
 		private static string _nodePath = string.Empty;
 
-        public static string GamePath
+		public static string toolPath
 		{
 			get
 			{
-				if (string.IsNullOrEmpty(_gamePath))
-				{
-					_gamePath = Path.Combine(Application.dataPath, "Game");
-					_gamePath = _gamePath.Replace('\\', '/');
-				}
-
-				return _gamePath;
+				if (!string.IsNullOrEmpty(_toolPath)) return _toolPath;
+				_toolPath = Path.Combine(Application.dataPath, "BehaviorTree/Editor");
+				_toolPath = _toolPath.Replace('\\', '/');
+				return _toolPath;
 			}
-		}
-
-		public static string ModulePath(bool isAp = false)
-		{
-			if (string.IsNullOrEmpty(_modulePath))
-			{
-				_moduleAbsPath = Application.dataPath.Replace('\\', '/') + "/BehaviorTree";
-				_modulePath = "Assets/BehaviorTree";
-			}
-
-			return isAp ? _moduleAbsPath : _modulePath;
 		}
 
 		public static string behaviorPath
 		{
 			get
 			{
-				if (string.IsNullOrEmpty(_behaviorPath))
-					_behaviorPath = GamePath + "/Lua/behaviors";
+				if (!string.IsNullOrEmpty(_behaviorPath)) return _behaviorPath;
+				_behaviorPath = Path.Combine(Application.dataPath, "Game/Lua/config/behavior");
+				_behaviorPath = _behaviorPath.Replace('\\', '/');
 				return _behaviorPath;
 			}
 		}
@@ -56,8 +41,9 @@ namespace BT
 		{
 			get
 			{
-				if (string.IsNullOrEmpty(_jsonPath))
-					_jsonPath = ModulePath(true) + "/Editor/Json";
+				if (!string.IsNullOrEmpty(_jsonPath)) return _jsonPath;
+				_jsonPath = Path.Combine(toolPath, "Json");
+				_jsonPath = _jsonPath.Replace('\\', '/');
 				return _jsonPath;
 			}
 		}
@@ -66,15 +52,15 @@ namespace BT
 		{
 			get
 			{
-				if (string.IsNullOrEmpty(_nodePath))
-					_nodePath = GamePath + "/Lua/nodes";
+				if (!string.IsNullOrEmpty(_nodePath)) return _nodePath;
+				_nodePath = Path.Combine(Application.dataPath, "Game/Lua/behavior/nodes");
+				_nodePath = _nodePath.Replace('\\', '/');
 				return _nodePath;
 			}
 		}
 
 		public static void CleanPath()
 		{
-			_modulePath = string.Empty;
 			_behaviorPath = string.Empty;
 			_jsonPath = string.Empty;
 			_nodePath = string.Empty;
@@ -95,8 +81,11 @@ namespace BT
 			if (tree != null)
 			{
 				WalkNodeData(tree.Root);
-				var content = JsonConvert.SerializeObject(tree.Root.Data, Formatting.Indented);
+				string content = JsonConvert.SerializeObject(tree.Root.Data, Formatting.Indented);
 				File.WriteAllText(Path.Combine(jsonPath, $"{tree.Name}.json"), content);
+
+				var luaData = SwitchToLua(tree.Root.Data);
+				content = JsonConvert.SerializeObject(luaData, Formatting.Indented);
 
 				content = content.Replace("[", "{");
 				content = content.Replace("]", "}");
@@ -129,18 +118,6 @@ namespace BT
 					content = content.Replace(m.Value, word);
 				}
 
-				mc = Regex.Matches(content, "\\s*displayName= [^\\s}]+,?");
-				foreach (Match m in mc)
-				{
-					content = content.Replace(m.Value, "");
-				}
-
-				mc = Regex.Matches(content, "\\s*desc= [^\\s}]+,?");
-				foreach (Match m in mc)
-				{
-					content = content.Replace(m.Value, "");
-				}
-
 				content = $"local __bt__ = {content}\nreturn __bt__";
 				File.WriteAllText(Path.Combine(behaviorPath, $"{tree.Name}.lua"), content);
 			}
@@ -149,7 +126,7 @@ namespace BT
 		public static void WalkNodeData(BtNode parent)
 		{
 			parent.Data.name = parent.NodeName;
-			parent.Data.SetPosition(parent.BtNodeGraph.RealRect.position);
+			parent.Data.SetPosition(parent.Graph.RealRect.position);
 
 			if (parent.IsHaveChild)
 			{
@@ -173,6 +150,21 @@ namespace BT
 			}
 		}
 
+		public static BtNodeLua SwitchToLua(BtNodeData data)
+		{
+			var lua = new BtNodeLua { name = data.name, type = data.type, data = data.data };
+			if (data.children != null && data.children.Count > 0)
+			{
+				lua.children = new List<BtNodeLua>();
+				foreach (var child in data.children)
+				{
+					lua.children.Add(SwitchToLua(child));
+				}
+			}
+
+			return lua;
+		}
+
 		public static BehaviourTree LoadBehaviorTree(string file)
 		{
 			if (!File.Exists(file))
@@ -186,7 +178,7 @@ namespace BT
 
 		public static Dictionary<string, Dictionary<string, string>> ReadBTNodeOption()
 		{
-			var file = Path.Combine(Application.dataPath, "Editor/BTNodeDefaultOption.json");
+			var file = Path.Combine(toolPath, "BTNodeOption.json");
 			if (File.Exists(file))
 			{
 				var content = File.ReadAllText(file);
@@ -199,7 +191,7 @@ namespace BT
 		public static void WriteBtNodeOption(Dictionary<string, Dictionary<string, string>> data)
 		{
 			var content = JsonConvert.SerializeObject(data, Formatting.Indented);
-			File.WriteAllText(Path.Combine(Application.dataPath, "Editor/BTNodeDefaultOption.json"), content);
+			File.WriteAllText(Path.Combine(toolPath, "BTNodeOption.json"), content);
 			_nodeOptions = null;
 		}
 
@@ -218,7 +210,7 @@ namespace BT
 
 		public static BtNode AddChildNode(BehaviourTree owner, BtNode parent, string name)
 		{
-			var pos = parent.BtNodeGraph.RealRect.position;
+			var pos = parent.Graph.RealRect.position;
 			if (!mNodeTypeDict.ContainsKey(name))
 				throw new ArgumentNullException(name, "找不到该类型");
 			var data = new BtNodeData(name, mNodeTypeDict[name], pos.x,
@@ -267,14 +259,14 @@ namespace BT
 		public static void AutoAlignPosition(BtNode node)
 		{
 			var width = (BtConst.DefaultWidth + BtConst.DefaultSpacingX) / 2;
-			var multiW = Mathf.RoundToInt(node.BtNodeGraph.RealRect.x / width);
+			var multiW = Mathf.RoundToInt(node.Graph.RealRect.x / width);
 			float x = multiW * width;
 
 			var height = (BtConst.DefaultHeight + BtConst.DefaultSpacingY) / 2;
-			var multiH = Mathf.RoundToInt(node.BtNodeGraph.RealRect.y / height);
+			var multiH = Mathf.RoundToInt(node.Graph.RealRect.y / height);
 			float y = multiH * height;
 
-			node.BtNodeGraph.RealRect.position = new Vector2(x, y);
+			node.Graph.RealRect.position = new Vector2(x, y);
 		}
 
 		public static void LoadNodeFile()
@@ -284,15 +276,10 @@ namespace BT
 			foreach (var file in files)
 			{
 				var sortPath = file.Replace("\\", "/");
-				sortPath = sortPath.Replace(nodePath, "");
-				if (sortPath.Contains("/actions/") ||
-				    sortPath.Contains("/composites/") ||
-				    sortPath.Contains("/decorators/"))
-				{
-					var fileName = Path.GetFileNameWithoutExtension(file);
-					var type = sortPath.Substring(1, sortPath.LastIndexOf('/') - 1);
-					mNodeTypeDict.Add(fileName, type);
-				}
+				sortPath = sortPath.Replace(nodePath + "/", "");
+				var fileName = Path.GetFileNameWithoutExtension(file);
+				var type = sortPath.Substring(0, sortPath.LastIndexOf('.'));
+				mNodeTypeDict.Add(fileName, type);
 			}
 		}
 
@@ -304,15 +291,12 @@ namespace BT
 			if (mNodeTypeDict.ContainsKey(key))
 			{
 				var type = mNodeTypeDict[key];
-				switch (type)
-				{
-					case "actions":
-						return new Task(node);
-					case "composites":
-						return new Composite(node);
-					case "decorators":
-						return new Decorator(node);
-				}
+				if (type.StartsWith("tasks/"))
+					return new Task(node);
+				if (type.StartsWith("composites/"))
+					return new Composite(node);
+				if (type.StartsWith("decorators/"))
+					return new Decorator(node);
 			}
 
 			throw new ArgumentNullException(node.NodeName, "找不到该节点");
@@ -325,9 +309,8 @@ namespace BT
 			{
 				foreach (var kv in mNodeTypeDict)
 				{
-					var data = kv.Key.Replace("Node", "");
-					var menuPath = $"{kv.Value}/{data}";
-					menu.AddItem(new GUIContent(menuPath), false, callback, kv.Key);
+					//var data = kv.Key.Replace("Node", "")
+					menu.AddItem(new GUIContent(kv.Value), false, callback, kv.Key);
 				}
 
 				if (BtEditorWindow.CopyNode != null)

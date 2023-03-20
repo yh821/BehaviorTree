@@ -1,35 +1,43 @@
 {
   "displayName": "root",
+  "desc": "",
   "name": "rootNode",
   "type": null,
   "posX": 520.0,
   "posY": 0.0,
+  "fold": false,
   "data": {
     "restart": "1"
   },
   "children": [
     {
       "displayName": "selector",
+      "desc": "",
       "name": "selectorNode",
       "type": "composites",
       "posX": 520.0,
       "posY": 120.0,
+      "fold": false,
       "data": null,
       "children": [
         {
           "displayName": "parallel",
+          "desc": "",
           "name": "parallelNode",
           "type": "composites",
           "posX": 390.0,
           "posY": 240.0,
+          "fold": false,
           "data": null,
           "children": [
             {
               "displayName": "显示对话",
+              "desc": "",
               "name": "speakNode",
               "type": "actions",
               "posX": 390.0,
               "posY": 360.0,
+              "fold": false,
               "data": {
                 "say": "hello world"
               },
@@ -39,18 +47,22 @@
         },
         {
           "displayName": "parallel",
+          "desc": "",
           "name": "parallelNode",
           "type": "composites",
           "posX": 520.0,
           "posY": 240.0,
+          "fold": false,
           "data": null,
           "children": [
             {
               "displayName": "显示对话",
+              "desc": "",
               "name": "speakNode",
               "type": "actions",
               "posX": 520.0,
               "posY": 360.0,
+              "fold": false,
               "data": {
                 "say": "hello world"
               },

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace BT
@@ -17,7 +17,153 @@ namespace BT
 		None
 	}
 
-	[Serializable]
+	public class BtConst
+	{
+		/// <summary>
+		/// 装饰节点 一般可添加子节点
+		/// </summary>
+		public const int NormalDecoratorCanAddNode = 1;
+
+		/// <summary>
+		/// 复合节点 一般可添加子节点
+		/// </summary>
+		public const int NormalCompositeCanAddNode = 999;
+
+		/// <summary>
+		/// 任务节点 一般可添加子节点
+		/// </summary>
+		public const int NormalTaskCanAddNode = 0;
+
+		/// <summary>
+		/// 贝塞尔曲线粗细
+		/// </summary>
+		public const int BezierSize = 3;
+
+		/// <summary>
+		/// 连接点半径
+		/// </summary>
+		public const float LinePointLength = 24;
+
+		/// <summary>
+		/// 图标尺寸
+		/// </summary>
+		public const float IconSize = 30;
+
+		/// <summary>
+		/// 左侧监视面板宽度
+		/// </summary>
+		public const float RightInspectWidth = 240;
+		/// <summary>
+		/// 左侧监视面板高度
+		/// </summary>
+		public const float RightInspectHeight = 500;
+
+		/// <summary>
+		/// 节点默认宽度
+		/// </summary>
+		public const int DefaultWidth = 120;
+
+		/// <summary>
+		/// 节点默认高度
+		/// </summary>
+		public const int DefaultHeight = 60;
+
+		/// <summary>
+		/// 节点默认横行距离
+		/// </summary>
+		public const int DefaultSpacingX = 10;
+
+		/// <summary>
+		/// 节点默认纵向距离
+		/// </summary>
+		public const int DefaultSpacingY = 60;
+
+		/// <summary>
+		/// 根节点名
+		/// </summary>
+		public const string RootName = "rootNode";
+
+	}
+
+	public class BtNodeLua
+	{
+		public string name;
+		public string type;
+		public Dictionary<string, string> data;
+		public List<BtNodeLua> children;
+	}
+
+	public class BtNodeData
+	{
+		public string displayName = string.Empty;
+		public string desc = string.Empty;
+		public string name = string.Empty;
+		public string type = string.Empty;
+		public float posX = 0;
+		public float posY = 0;
+		public bool fold = false;//是否折叠子节点
+
+		public Dictionary<string, string> data;
+
+		public List<BtNodeData> children;
+
+		public BtNodeData(string name, string type, float x, float y)
+		{
+			this.name = name;
+			this.type = type;
+			SetPos(x, y);
+			displayName = name.Replace("Node", "");
+		}
+
+		public void AddChild(BtNodeData child)
+		{
+			if (children == null)
+				children = new List<BtNodeData>();
+			children.Add(child);
+		}
+
+		public void AddData(string key, string value)
+		{
+			if (data == null)
+				data = new Dictionary<string, string>();
+			if (data.ContainsKey(key))
+				data[key] = value;
+			else
+				data.Add(key, value);
+		}
+
+		public void RemoveData(string key)
+		{
+			if (data != null && data.ContainsKey(key))
+				data.Remove(key);
+		}
+
+		public BtNodeData Clone()
+		{
+			var clone = new BtNodeData(name, type, posX, posY) { displayName = displayName };
+			if (data != null)
+				clone.data = new Dictionary<string, string>(data);
+			return clone;
+		}
+
+		public void SetPos(float x, float y)
+		{
+			posX = x;
+			posY = y;
+		}
+
+		public Vector2 GetPosition()
+		{
+			return new Vector2(posX, posY);
+		}
+
+		public void SetPosition(Vector2 pos)
+		{
+			SetPos(pos.x, pos.y);
+		}
+
+	}
+
 	public abstract class BtNodeType
 	{
 		/// <summary>
@@ -42,12 +188,18 @@ namespace BT
 		public abstract int CanAddNodeCount { get; }
 
 		public abstract GUIStyle NormalStyle { get; }
-
+		public abstract GUIStyle FoldNormalStyle { get; }
 		public abstract GUIStyle SelectStyle { get; }
+		public abstract GUIStyle FoldSelectStyle { get; }
 
 		protected BtNodeType(BtNode node)
 		{
 			BelongNode = node;
+		}
+
+		public virtual GUIContent GetIcon()
+		{
+			return null;
 		}
 	}
 
@@ -58,8 +210,9 @@ namespace BT
 		public override int CanAddNodeCount => BtConst.NormalDecoratorCanAddNode;
 
 		public override GUIStyle NormalStyle => BtNodeStyle.DecoratorStyle;
-
+		public override GUIStyle FoldNormalStyle => BtNodeStyle.FoldDecoratorStyle;
 		public override GUIStyle SelectStyle => BtNodeStyle.SelectDecoratorStyle;
+		public override GUIStyle FoldSelectStyle => BtNodeStyle.FoldSelectDecoratorStyle;
 
 		public override ErrorType IsValid => BelongNode.ChildNodeList.Count == 1 ? ErrorType.None : ErrorType.Error;
 
@@ -77,6 +230,11 @@ namespace BT
 		public Root(BtNode node) : base(node)
 		{
 		}
+
+		public override GUIContent GetIcon()
+		{
+			return null;//BtNodeStyle.RootContent;
+		}
 	}
 
 	public class Composite : BtNodeType
@@ -86,8 +244,9 @@ namespace BT
 		public override int CanAddNodeCount => BtConst.NormalCompositeCanAddNode;
 
 		public override GUIStyle NormalStyle => BtNodeStyle.CompositeStyle;
-
+		public override GUIStyle FoldNormalStyle => BtNodeStyle.FoldCompositeStyle;
 		public override GUIStyle SelectStyle => BtNodeStyle.SelectCompositeStyle;
+		public override GUIStyle FoldSelectStyle => BtNodeStyle.FoldSelectCompositeStyle;
 
 		public override ErrorType IsValid => BelongNode.IsHaveChild ? ErrorType.None : ErrorType.Error;
 
@@ -103,8 +262,9 @@ namespace BT
 		public override int CanAddNodeCount => BtConst.NormalTaskCanAddNode;
 
 		public override GUIStyle NormalStyle => BtNodeStyle.TaskStyle;
-
+		public override GUIStyle FoldNormalStyle => BtNodeStyle.FoldTaskStyle;
 		public override GUIStyle SelectStyle => BtNodeStyle.SelectTaskStyle;
+		public override GUIStyle FoldSelectStyle => BtNodeStyle.FoldSelectTaskStyle;
 
 		public override ErrorType IsValid => ErrorType.None;
 
