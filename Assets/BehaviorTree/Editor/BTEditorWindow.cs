@@ -87,8 +87,13 @@ namespace BT
 					mBehaviourTree.Update(position);
 				}
 				GUILayout.EndVertical();
+				
 				BeginWindows();
-				GUILayout.Window(0, mNodeInspectorRect, NodeInspectorWindow, "Inspector");
+				{
+					mNodeInspectorRect = new Rect(position.width - BtConst.RightInspectWidth, 0,
+						BtConst.RightInspectWidth, BtConst.RightInspectHeight);
+					GUILayout.Window(0, mNodeInspectorRect, NodeInspectorWindow, "Inspector");
+				}
 				EndWindows();
 			}
 			GUILayout.EndHorizontal();
@@ -118,7 +123,7 @@ namespace BT
 
 		#endregion
 
-		#region NodeEditor
+		#region NodeInspector
 
 		private const int SPACE_VALUE = 10;
 		private const int BTN_ICON_WIDTH = 28;
@@ -127,7 +132,7 @@ namespace BT
 		private static string[] TAB =
 		{
 			"Node Inspector",
-			"Node Data Option",
+			"Node Option",
 		};
 		public int Tab { get; set; }
 
@@ -370,7 +375,7 @@ namespace BT
 
 		#endregion
 
-		#region Node Default Option
+		#region NodeOption
 		
 		private static Dictionary<string, Dictionary<string, string>> mOptions;
 		
