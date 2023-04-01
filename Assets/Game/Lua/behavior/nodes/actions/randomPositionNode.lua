@@ -5,8 +5,8 @@
 	purpose: 
 ----------------------------------------------------
 ]]
----@class randomPositionNode : baseNode
-randomPositionNode = simple_class(baseNode)
+---@class randomPositionNode : taskNode
+randomPositionNode = simple_class(taskNode)
 
 local MapManager = CS.MapManagerInterface
 local IsCanMove = MapManager.IsCanMove
@@ -15,8 +15,8 @@ function randomPositionNode:start()
 	local pos = self:getNextPos()
 	if IsCanMove(pos) then
 		self:setSharedVar('targetPos', pos)
-		self.state = nodeState.success
+		self.state = eNodeState.success
 	else
-		self.state = nodeState.failure
+		self.state = eNodeState.failure
 	end
 end

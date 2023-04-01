@@ -11,13 +11,13 @@ inverterNode = simple_class(decoratorNode)
 function inverterNode:tick()
 	if self.children then
 		local v = self.children[1]
-		if v.state == nodeState.failure then
-			return nodeState.success
-		elseif v.state == nodeState.success then
-			return nodeState.failure
+		if v.state == eNodeState.failure then
+			return eNodeState.success
+		elseif v.state == eNodeState.success then
+			return eNodeState.failure
 		else
 			return v.state
 		end
 	end
-	return nodeState.failure
+	return eNodeState.failure
 end

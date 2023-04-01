@@ -7,12 +7,12 @@ namespace BT
 {
 	public class BtGrid
 	{
-		private readonly Texture mBackground;
+		private readonly Texture _background;
 		public BtGrid()
 		{
 			var path = BtHelper.toolPath + "/GUI/background.png";
 			path = FileUtil.GetProjectRelativePath(path);
-			mBackground = AssetDatabase.LoadAssetAtPath<Texture>(path);
+			_background = AssetDatabase.LoadAssetAtPath<Texture>(path);
 		}
 
 		/// <summary>
@@ -22,19 +22,13 @@ namespace BT
 		public void DrawGrid(Vector2 windowSize)
 		{
 			Handles();
-			var position = BtEditorWindow.Window.Position;
-			var rect = new Rect(0, 0, windowSize.x, windowSize.y);
-			var texCoords = new Rect(-position.x / mBackground.width,
-				(1.0f - windowSize.y / mBackground.height) + position.y / mBackground.height,
-				windowSize.x / mBackground.width,
-				windowSize.y / mBackground.height);
-			GUI.DrawTextureWithTexCoords(rect, mBackground, texCoords);
+			DrawBackground(windowSize);
 		}
 
 		/// <summary>
 		/// 拖拽背景
 		/// </summary>
-		public void Handles()
+		private void Handles()
 		{
 			var currentEvent = BtEditorWindow.Window.Event;
 			if (currentEvent.type == EventType.MouseDrag && currentEvent.button == 1)
@@ -43,6 +37,17 @@ namespace BT
 				BtEditorWindow.Window.Position += currentEvent.delta;
 			}
 		}
+
+		private void DrawBackground(Vector2 windowSize)
+		{
+			var position = BtEditorWindow.Window.Position;
+			var rect = new Rect(0, 0, windowSize.x, windowSize.y);
+			var texCoords = new Rect(-position.x / _background.width,
+				(1.0f - windowSize.y / _background.height) + position.y / _background.height,
+				windowSize.x / _background.width,
+				windowSize.y / _background.height);
+			GUI.DrawTextureWithTexCoords(rect, _background, texCoords);
+		}
 	}
 
     public class BtNode
@@ -50,7 +55,7 @@ namespace BT
         /// <summary>
         /// 编辑化节点
         /// </summary>
-        public BtNodeType Type { get; }
+        public BtNodeType TaskType { get; }
 
         /// <summary>
         /// 唯一识别符
@@ -73,8 +78,6 @@ namespace BT
 
         public bool IsHaveChild => ChildNodeList.Count > 0;
 
-        public bool IsTask => Type.Type == BtNodeEnum.Task;
-
         public bool IsRoot => NodeName == BtConst.RootName;
 
         public bool IsSelected => BtEditorWindow.Window.CurSelectNode == this;
@@ -92,11 +95,11 @@ namespace BT
             Parent = parent;
             Data = data;
             Graph = new BtNodeGraph();
-            NodeName = data.name;
+            NodeName = data.file;
             Graph.RealRect = new Rect(data.posX, data.posY, BtConst.DefaultWidth, BtConst.DefaultHeight);
             ChildNodeList = new List<BtNode>();
             Guid = BtHelper.GenerateUniqueStringId();
-            Type = BtHelper.CreateNodeType(this);
+            TaskType = BtHelper.CreateNodeType(this);
         }
 
         public void Update(Rect canvas)
@@ -133,17 +136,17 @@ namespace BT
             if (!IsRoot && !IsHaveParent)
                 GUI.Label(Graph.UpPointRect, BtNodeStyle.ErrorPoint);
 
-            if (!IsTask)
+            if (TaskType.CanAddNodeCount > 0)
                 GUI.Label(Graph.DownPointRect,
-                    Type.IsValid == ErrorType.Error ? BtNodeStyle.ErrorPoint : BtNodeStyle.LinePoint);
+                    TaskType.IsValid == ErrorType.Error ? BtNodeStyle.ErrorPoint : BtNodeStyle.LinePoint);
 
             GUIStyle style;
             if (IsSelected)
-                style = Data.fold ? Type.FoldSelectStyle : Type.SelectStyle;
+                style = Data.fold ? TaskType.FoldSelectStyle : TaskType.SelectStyle;
             else
-                style = Data.fold ? Type.FoldNormalStyle : Type.NormalStyle;
+                style = Data.fold ? TaskType.FoldNormalStyle : TaskType.NormalStyle;
 
-            var showLabel = Data.displayName;
+            var showLabel = Data.name;
             if (Data.data == null)
             {
                 showLabel = $"\n{showLabel}";
@@ -166,7 +169,7 @@ namespace BT
                 }
             }
 
-            var icon = Type.GetIcon();
+            var icon = TaskType.GetIcon();
             if (icon == null)
                 GUI.Label(Graph.NodeRect, showLabel, style);
             else
@@ -260,7 +263,7 @@ namespace BT
                 {
                     mIsLinkParent = false;
                     var parent = window.GetMouseTriggerDownPoint(curEvent.mousePosition);
-                    if (parent != null && parent != this && parent.ChildNodeList.Count < parent.Type.CanAddNodeCount)
+                    if (parent != null && parent != this && parent.ChildNodeList.Count < parent.TaskType.CanAddNodeCount)
                     {
                         parent.ChildNodeList.Add(this);
                         parent.Data.AddChild(Data);
@@ -507,7 +510,7 @@ namespace BT
 		public static GUIStyle SelectCompositeStyle => "flow node 1 on";
 		public static GUIStyle FoldSelectCompositeStyle => "flow node hex 1 on";
 
-		public static GUIStyle TaskStyle => "flow node 3";
+		public static GUIStyle ActionStyle => "flow node 3";
 		public static GUIStyle FoldTaskStyle => "flow node hex 3";
 		public static GUIStyle SelectTaskStyle => "flow node 3 on";
 		public static GUIStyle FoldSelectTaskStyle => "flow node hex 3 on";

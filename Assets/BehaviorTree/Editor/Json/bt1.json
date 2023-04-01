@@ -1,54 +1,58 @@
 {
-  "displayName": "root",
+  "name": "root",
   "desc": "",
-  "name": "rootNode",
+  "file": "rootNode",
   "type": null,
-  "posX": 0.0,
-  "posY": 0.0,
+  "posX": 260.0,
+  "posY": 120.0,
   "fold": false,
   "data": {
     "restart": "1"
   },
   "children": [
     {
-      "displayName": "selector",
+      "name": "selector",
       "desc": "",
-      "name": "selectorNode",
+      "file": "selectorNode",
       "type": "composites",
-      "posX": 0.0,
-      "posY": 120.0,
+      "posX": 260.0,
+      "posY": 240.0,
       "fold": false,
-      "data": null,
+      "data": {
+        "abort": "None"
+      },
       "children": [
         {
-          "displayName": "checkState",
+          "name": "checkState",
           "desc": "",
-          "name": "checkStateNode",
+          "file": "checkStateNode",
           "type": "decorators",
-          "posX": -130.0,
-          "posY": 240.0,
+          "posX": 130.0,
+          "posY": 360.0,
           "fold": false,
           "data": {
             "stateId": "0"
           },
           "children": [
             {
-              "displayName": "sequence",
+              "name": "sequence",
               "desc": "",
-              "name": "sequenceNode",
+              "file": "sequenceNode",
               "type": "composites",
-              "posX": -130.0,
-              "posY": 360.0,
+              "posX": 130.0,
+              "posY": 480.0,
               "fold": false,
-              "data": null,
+              "data": {
+                "abort": "Self"
+              },
               "children": [
                 {
-                  "displayName": "几率权重",
+                  "name": "几率权重",
                   "desc": "",
-                  "name": "weightNode",
+                  "file": "weightNode",
                   "type": "actions",
-                  "posX": -260.0,
-                  "posY": 480.0,
+                  "posX": 0.0,
+                  "posY": 600.0,
                   "fold": false,
                   "data": {
                     "weight": "10"
@@ -56,22 +60,24 @@
                   "children": null
                 },
                 {
-                  "displayName": "parallel",
+                  "name": "parallel",
                   "desc": "",
-                  "name": "parallelNode",
+                  "file": "parallelNode",
                   "type": "composites",
-                  "posX": -130.0,
-                  "posY": 480.0,
+                  "posX": 130.0,
+                  "posY": 600.0,
                   "fold": false,
-                  "data": null,
+                  "data": {
+                    "abort": "None"
+                  },
                   "children": [
                     {
-                      "displayName": "等待时间",
+                      "name": "等待时间",
                       "desc": "",
-                      "name": "waitNode",
+                      "file": "waitNode",
                       "type": "actions",
-                      "posX": -130.0,
-                      "posY": 600.0,
+                      "posX": 130.0,
+                      "posY": 720.0,
                       "fold": false,
                       "data": {
                         "waitMin": "2",
@@ -86,24 +92,24 @@
           ]
         },
         {
-          "displayName": "checkState",
+          "name": "checkState",
           "desc": "",
-          "name": "checkStateNode",
+          "file": "checkStateNode",
           "type": "decorators",
-          "posX": 0.0,
-          "posY": 240.0,
+          "posX": 260.0,
+          "posY": 360.0,
           "fold": false,
           "data": {
             "stateId": "0"
           },
           "children": [
             {
-              "displayName": "moveToPosition",
+              "name": "moveToPosition",
               "desc": "",
-              "name": "moveToPositionNode",
+              "file": "moveToPositionNode",
               "type": "actions",
-              "posX": 0.0,
-              "posY": 360.0,
+              "posX": 260.0,
+              "posY": 480.0,
               "fold": false,
               "data": null,
               "children": null
@@ -111,24 +117,24 @@
           ]
         },
         {
-          "displayName": "checkState",
+          "name": "checkState",
           "desc": "",
-          "name": "checkStateNode",
+          "file": "checkStateNode",
           "type": "decorators",
-          "posX": 130.0,
-          "posY": 240.0,
+          "posX": 390.0,
+          "posY": 360.0,
           "fold": false,
           "data": {
             "stateId": "0"
           },
           "children": [
             {
-              "displayName": "moveToPosition",
+              "name": "moveToPosition",
               "desc": "",
-              "name": "moveToPositionNode",
+              "file": "moveToPositionNode",
               "type": "actions",
-              "posX": 130.0,
-              "posY": 360.0,
+              "posX": 390.0,
+              "posY": 480.0,
               "fold": false,
               "data": null,
               "children": null

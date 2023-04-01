@@ -11,13 +11,13 @@ selectorNode = simple_class(compositeNode)
 function selectorNode:tick()
 	if self.children then
 		for _, v in ipairs(self.children) do
-			if v.state == nil or v.state == nodeState.running then
+			if v.state == nil or v.state == eNodeState.running then
 				v.state = v:tick()
-				if v.state ~= nodeState.failure then
+				if v.state ~= eNodeState.failure then
 					return v.state
 				end
 			end
 		end
 	end
-	return nodeState.failure
+	return eNodeState.failure
 end

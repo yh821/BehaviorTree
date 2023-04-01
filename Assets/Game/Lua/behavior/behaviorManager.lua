@@ -26,6 +26,7 @@ behaviorStateEnum = {
 local _format = string.format
 
 local _behaviorNodeDict = {}
+---@type behaviorTree[]
 local _behaviorTreeDict = {}
 local _globalVariables = {}
 
@@ -52,18 +53,18 @@ end
 
 function behaviorManager:cleanTree()
 	for _, bt in pairs(_behaviorTreeDict) do
-		bt:reset(true)
+		bt:reset()
 	end
 	_behaviorTreeDict = {}
 end
 
 local _genBehaviorTree
 _genBehaviorTree = function(json, parent, tree)
-	if _behaviorNodeDict[json.name] == nil then
-		_behaviorNodeDict[json.name] = true
-		require(_format('lua.behavior.%s.%s', json.type, json.name))
+	if _behaviorNodeDict[json.file] == nil then
+		_behaviorNodeDict[json.file] = true
+		require(_format('lua.behavior.%s.%s', json.type, json.file))
 	end
-	local class = _G[json.name]
+	local class = _G[json.file]
 	if class then
 		local node = class:new(tree, json.data)
 		parent:addChild(node)

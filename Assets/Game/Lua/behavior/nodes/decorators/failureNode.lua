@@ -11,12 +11,12 @@ failureNode = simple_class(decoratorNode)
 function failureNode:tick()
 	if self.children then
 		local v = self.children[1]
-		if v.state == nodeState.failure or v.state == nodeState.success then
-			return nodeState.failure
+		if v.state == eNodeState.failure or v.state == eNodeState.success then
+			return eNodeState.failure
 		else
 			return v.state
 		end
 	end
-	return nodeState.failure
+	return eNodeState.failure
 end
 

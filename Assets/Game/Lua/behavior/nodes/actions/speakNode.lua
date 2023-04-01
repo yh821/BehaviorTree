@@ -5,8 +5,8 @@
 	purpose: 
 ----------------------------------------------------
 ]]
----@class speakNode : baseNode
-speakNode = simple_class(baseNode)
+---@class speakNode : taskNode
+speakNode = simple_class(taskNode)
 
 function speakNode:start()
 	if self.hudId == nil then
@@ -15,9 +15,9 @@ function speakNode:start()
 	local widget = hudControl:getHUDWidget(self.hudId)
 	if widget and self.data and self.data.say then
 		widget:setText(self.data.say)
-		self.state = nodeState.success
+		self.state = eNodeState.success
 	else
-		self.state = nodeState.failure
+		self.state = eNodeState.failure
 	end
 end
 
@@ -26,7 +26,7 @@ function speakNode:reset()
 	self.state = nil
 end
 
-function speakNode:broke()
+function speakNode:abort()
 	self:shutUp()
 end
 

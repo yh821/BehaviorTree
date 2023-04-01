@@ -5,8 +5,8 @@
 	purpose: 
 ----------------------------------------------------
 ]]
----@class runAnimatorNode : baseNode
-runAnimatorNode = simple_class(baseNode)
+---@class runAnimatorNode : taskNode
+runAnimatorNode = simple_class(taskNode)
 
 local MapManager = CS.MapManagerInterface
 local RunAnimator = MapManager.RunAnimator
@@ -20,12 +20,12 @@ end
 function runAnimatorNode:update()
 	self:refresh(self:getSharedVar('animState'))
 	if self:getSharedVar('playState') == playStateEnum.eEnd then
-		return nodeState.success
+		return eNodeState.success
 	end
-	return nodeState.running
+	return eNodeState.running
 end
 
-function runAnimatorNode:broke()
+function runAnimatorNode:abort()
 	---中断行为暂时设置为idle动画
 	self:refresh(animatorStateEnum.eIdle)
 end

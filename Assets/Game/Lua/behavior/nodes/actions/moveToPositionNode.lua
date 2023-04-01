@@ -5,8 +5,8 @@
 	purpose: 
 ----------------------------------------------------
 ]]
----@class moveToPositionNode : baseNode
-moveToPositionNode = simple_class(baseNode)
+---@class moveToPositionNode : taskNode
+moveToPositionNode = simple_class(taskNode)
 
 local MapManager = CS.MapManagerInterface
 local IsPositionEqual = MapManager.IsPositionEqual
@@ -15,12 +15,12 @@ local MoveToPosition = MapManager.MoveToPosition
 local StopMove = MapManager.StopMove
 
 function moveToPositionNode:start()
-	self.state = nodeState.running
+	self.state = eNodeState.running
 	self:setSharedVar('playState', playStateEnum.eStart)
 	local targetPos = self:getSharedVar('targetPos')
 	local entityPos = GetEntityPos(self.owner.guid)
 	if targetPos == nil or IsPositionEqual(entityPos, targetPos) then
-		self.state = nodeState.failure
+		self.state = eNodeState.failure
 		self:setSharedVar('playState', playStateEnum.eEnd)
 	else
 		self:setSharedVar('animState', animatorStateEnum.eWalk)
@@ -30,7 +30,7 @@ function moveToPositionNode:start()
 	end
 end
 
-function moveToPositionNode:broke()
+function moveToPositionNode:abort()
 	StopMove(self.owner.guid)
 	self:moveFinish()
 end
@@ -38,5 +38,5 @@ end
 function moveToPositionNode:moveFinish()
 	self:setSharedVar('animState', animatorStateEnum.eIdle)
 	self:setSharedVar('playState', playStateEnum.eEnd)
-	self.state = nodeState.success
+	self.state = eNodeState.success
 end

@@ -5,15 +5,15 @@
 	purpose:
 ----------------------------------------------------
 ]]
----@class compositeNode : baseNode
----@field children baseNode[]
-compositeNode = simple_class(baseNode)
+---@class compositeNode : taskNode
+---@field children taskNode[]
+compositeNode = simple_class(taskNode)
 
 local _insert = table.insert
 local _remove = table.remove
---local _max_child = 1 --最大子节点数
+local _max_child = 1 --最大子节点数
 
----@param node baseNode
+---@param node taskNode
 function compositeNode:addChild(node)
 	if self.children == nil then
 		self.children = {}
@@ -24,7 +24,11 @@ function compositeNode:addChild(node)
 	_insert(self.children, node)
 end
 
----@return baseNode[]
+---@return taskNode[]
 function compositeNode:getChildren()
 	return self.children
+end
+
+function compositeNode:isComposite()
+	return true
 end

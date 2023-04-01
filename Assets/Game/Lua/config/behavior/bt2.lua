@@ -1,19 +1,19 @@
 local __bt__ = {
-  name= "rootNode",
+  file= "rootNode",
   data= {
     restart= 1
   },
   children= {
     {
-      name= "selectorNode",
+      file= "selectorNode",
       type= "composites",
       children= {
         {
-          name= "parallelNode",
+          file= "parallelNode",
           type= "composites",
           children= {
             {
-              name= "speakNode",
+              file= "speakNode",
               type= "actions",
               data= {
                 say= "hello world"
@@ -22,11 +22,11 @@ local __bt__ = {
           }
         },
         {
-          name= "parallelNode",
+          file= "parallelNode",
           type= "composites",
           children= {
             {
-              name= "speakNode",
+              file= "speakNode",
               type= "actions",
               data= {
                 say= "hello world"

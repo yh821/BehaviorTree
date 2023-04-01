@@ -7,6 +7,9 @@ local __bt__ = {
     {
       name= "selectorNode",
       type= "composites",
+      data= {
+        abort= "None"
+      },
       children= {
         {
           name= "checkStateNode",
@@ -18,6 +21,9 @@ local __bt__ = {
             {
               name= "sequenceNode",
               type= "composites",
+              data= {
+                abort= "Self"
+              },
               children= {
                 {
                   name= "weightNode",
@@ -29,6 +35,9 @@ local __bt__ = {
                 {
                   name= "parallelNode",
                   type= "composites",
+                  data= {
+                    abort= "None"
+                  },
                   children= {
                     {
                       name= "waitNode",

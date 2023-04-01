@@ -5,12 +5,12 @@
 	purpose:
 ----------------------------------------------------
 ]]
----@class behaviorTree
----@field child baseNode
+---@class behaviorTree : taskNode
+---@field child taskNode
 ---@field blackBoard table
 ---@field guid number
 ---@field restartOnComplete boolean
-behaviorTree = simple_class()
+behaviorTree = simple_class(taskNode)
 
 function behaviorTree:awake()
 	self.child = nil
@@ -24,15 +24,15 @@ function behaviorTree:addChild(node)
 	self.child = node
 end
 
----@return baseNode
+---@return taskNode
 function behaviorTree:getChildren()
 	return self.child
 end
 
 local _resetAll
----@param parent baseNode
+---@param parent taskNode
 _resetAll = function(parent)
-	parent:reset()
+	parent:_reset()
 	local children = parent:getChildren()
 	if children then
 		for i, v in ipairs(children) do
@@ -43,30 +43,33 @@ end
 
 function behaviorTree:tick()
 	local state = self.child.state
-	if self.restartOnComplete and (state == nodeState.success or state == nodeState.failure) then
+	if self.restartOnComplete and (state == eNodeState.success or state == eNodeState.failure) then
 		_resetAll(self.child)
 	end
-	if self.child.state == nil or self.child.state == nodeState.running then
+	if self.child.state == nil or self.child.state == eNodeState.running then
 		self.child.state = self.child:tick()
 	else
 		return self.child.state
 	end
 end
 
-local _breakAll
----@param parent baseNode
-_breakAll = function(parent)
-	parent:broke()
+local _abortAll
+---@param parent taskNode
+_abortAll = function(parent)
+	if parent.state == eNodeState.running then
+		parent:abort()
+		parent.state = eNodeState.failure
+	end
 	local children = parent:getChildren()
 	if children then
 		for i, v in ipairs(children) do
-			_breakAll(v)
+			_abortAll(v)
 		end
 	end
 end
 
-function behaviorTree:broke()
-	_breakAll(self.child)
+function behaviorTree:abort()
+	_abortAll(self.child)
 end
 
 ---@return table

@@ -5,15 +5,15 @@
 	purpose: 
 ----------------------------------------------------
 ]]
----@class setStateNode : baseNode
-setStateNode = simple_class(baseNode)
+---@class setStateNode : taskNode
+setStateNode = simple_class(taskNode)
 
 function setStateNode:start()
 	if self.data and self.data.stateId then
 		self.owner:setStateId(self.data.stateId)
-		self.state = nodeState.success
+		self.state = eNodeState.success
 	else
-		self.state = nodeState.failure
+		self.state = eNodeState.failure
 	end
 end
 

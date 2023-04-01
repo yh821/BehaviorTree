@@ -3,11 +3,21 @@ using UnityEngine;
 
 namespace BT
 {
-	public enum BtNodeEnum
+	public enum TaskType
 	{
 		Composite,
 		Decorator,
-		Task
+		Condition,
+		Action,
+		Root
+	}
+
+	public enum AbortType
+	{
+		None,
+		Self,
+		Lower,
+		Both
 	}
 
 	public enum ErrorType
@@ -95,9 +105,9 @@ namespace BT
 
 	public class BtNodeData
 	{
-		public string displayName = string.Empty;
-		public string desc = string.Empty;
 		public string name = string.Empty;
+		public string desc = string.Empty;
+		public string file = string.Empty;
 		public string type = string.Empty;
 		public float posX = 0;
 		public float posY = 0;
@@ -107,12 +117,12 @@ namespace BT
 
 		public List<BtNodeData> children;
 
-		public BtNodeData(string name, string type, float x, float y)
+		public BtNodeData(string file, string type, float x, float y)
 		{
-			this.name = name;
+			this.file = file;
 			this.type = type;
 			SetPos(x, y);
-			displayName = name.Replace("Node", "");
+			name = file.Replace("Node", "");
 		}
 
 		public void AddChild(BtNodeData child)
@@ -140,7 +150,7 @@ namespace BT
 
 		public BtNodeData Clone()
 		{
-			var clone = new BtNodeData(name, type, posX, posY) { displayName = displayName };
+			var clone = new BtNodeData(file, type, posX, posY) { name = name };
 			if (data != null)
 				clone.data = new Dictionary<string, string>(data);
 			return clone;
@@ -174,7 +184,7 @@ namespace BT
 		/// <summary>
 		/// 节点类型
 		/// </summary>
-		public abstract BtNodeEnum Type { get; }
+		public abstract TaskType Type { get; }
 
 		/// <summary>
 		/// 节点是否有效
@@ -203,9 +213,24 @@ namespace BT
 		}
 	}
 
+	public class Root : Decorator
+	{
+		public override TaskType Type => TaskType.Root;
+		public override GUIStyle NormalStyle => BtNodeStyle.RootStyle;
+		public override GUIStyle SelectStyle => BtNodeStyle.SelectRootStyle;
+		public Root(BtNode node) : base(node)
+		{
+		}
+
+		public override GUIContent GetIcon()
+		{
+			return null;//BtNodeStyle.RootContent;
+		}
+	}
+
 	public class Decorator : BtNodeType
 	{
-		public override BtNodeEnum Type => BtNodeEnum.Decorator;
+		public override TaskType Type => TaskType.Decorator;
 
 		public override int CanAddNodeCount => BtConst.NormalDecoratorCanAddNode;
 
@@ -221,25 +246,9 @@ namespace BT
 		}
 	}
 
-	public class Root : Decorator
-	{
-		public override GUIStyle NormalStyle => BtNodeStyle.RootStyle;
-
-		public override GUIStyle SelectStyle => BtNodeStyle.SelectRootStyle;
-
-		public Root(BtNode node) : base(node)
-		{
-		}
-
-		public override GUIContent GetIcon()
-		{
-			return null;//BtNodeStyle.RootContent;
-		}
-	}
-
 	public class Composite : BtNodeType
 	{
-		public override BtNodeEnum Type => BtNodeEnum.Composite;
+		public override TaskType Type => TaskType.Composite;
 
 		public override int CanAddNodeCount => BtConst.NormalCompositeCanAddNode;
 
@@ -255,20 +264,38 @@ namespace BT
 		}
 	}
 
-	public class Task : BtNodeType
+	public class Condition : BtNodeType
 	{
-		public override BtNodeEnum Type => BtNodeEnum.Task;
+		public override TaskType Type => TaskType.Condition;
 
 		public override int CanAddNodeCount => BtConst.NormalTaskCanAddNode;
 
-		public override GUIStyle NormalStyle => BtNodeStyle.TaskStyle;
+		public override GUIStyle NormalStyle => BtNodeStyle.ActionStyle;
 		public override GUIStyle FoldNormalStyle => BtNodeStyle.FoldTaskStyle;
 		public override GUIStyle SelectStyle => BtNodeStyle.SelectTaskStyle;
 		public override GUIStyle FoldSelectStyle => BtNodeStyle.FoldSelectTaskStyle;
 
 		public override ErrorType IsValid => ErrorType.None;
 
-		public Task(BtNode node) : base(node)
+		public Condition(BtNode node) : base(node)
+		{
+		}
+	}
+
+	public class Action : BtNodeType
+	{
+		public override TaskType Type => TaskType.Action;
+
+		public override int CanAddNodeCount => BtConst.NormalTaskCanAddNode;
+
+		public override GUIStyle NormalStyle => BtNodeStyle.ActionStyle;
+		public override GUIStyle FoldNormalStyle => BtNodeStyle.FoldTaskStyle;
+		public override GUIStyle SelectStyle => BtNodeStyle.SelectTaskStyle;
+		public override GUIStyle FoldSelectStyle => BtNodeStyle.FoldSelectTaskStyle;
+
+		public override ErrorType IsValid => ErrorType.None;
+
+		public Action(BtNode node) : base(node)
 		{
 		}
 	}

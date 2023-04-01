@@ -14,7 +14,7 @@ function randomSelectorNode:tick()
 	if self.children then
 		local index = nil
 		for i, v in ipairs(self.children) do
-			if index == nil and v.state == nodeState.running then
+			if index == nil and v.state == eNodeState.running then
 				index = i
 			end
 		end
@@ -27,5 +27,5 @@ function randomSelectorNode:tick()
 			return n.state
 		end
 	end
-	return nodeState.failure
+	return eNodeState.failure
 end

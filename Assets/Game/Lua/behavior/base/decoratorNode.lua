@@ -5,9 +5,9 @@
 	purpose: 
 ----------------------------------------------------
 ]]
----@class decoratorNode : baseNode
----@field children baseNode[]
-decoratorNode = simple_class(baseNode)
+---@class decoratorNode : taskNode
+---@field children taskNode[]
+decoratorNode = simple_class(taskNode)
 
 local _insert = table.insert
 local _remove = table.remove
@@ -30,3 +30,6 @@ function decoratorNode:tick()
 	--override
 end
 
+function decoratorNode:isDecorator()
+	return true
+end

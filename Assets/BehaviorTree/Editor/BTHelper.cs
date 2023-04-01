@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using GluonGui.WorkspaceWindow.Views.WorkspaceExplorer;
 using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
@@ -125,7 +126,7 @@ namespace BT
 
 		public static void WalkNodeData(BtNode parent)
 		{
-			parent.Data.name = parent.NodeName;
+			parent.Data.file = parent.NodeName;
 			parent.Data.SetPosition(parent.Graph.RealRect.position);
 
 			if (parent.IsHaveChild)
@@ -152,7 +153,7 @@ namespace BT
 
 		public static BtNodeLua SwitchToLua(BtNodeData data)
 		{
-			var lua = new BtNodeLua { name = data.name, type = data.type, data = data.data };
+			var lua = new BtNodeLua { name = data.file, type = data.type, data = data.data };
 			if (data.children != null && data.children.Count > 0)
 			{
 				lua.children = new List<BtNodeLua>();
@@ -291,8 +292,10 @@ namespace BT
 			if (mNodeTypeDict.ContainsKey(key))
 			{
 				var type = mNodeTypeDict[key];
-				if (type.StartsWith("tasks/"))
-					return new Task(node);
+				if (type.StartsWith("actions/"))
+					return new Action(node);
+				if (type.StartsWith("conditions/"))
+					return new Condition(node);
 				if (type.StartsWith("composites/"))
 					return new Composite(node);
 				if (type.StartsWith("decorators/"))
@@ -305,7 +308,7 @@ namespace BT
 		public static GenericMenu GetGenericMenu(BtNode node, GenericMenu.MenuFunction2 callback)
 		{
 			var menu = new GenericMenu();
-			if (!node.IsTask && node.ChildNodeList.Count < node.Type.CanAddNodeCount)
+			if (node.ChildNodeList.Count < node.TaskType.CanAddNodeCount)
 			{
 				foreach (var kv in mNodeTypeDict)
 				{
@@ -338,12 +341,56 @@ namespace BT
 			{
 				foreach (var kv in option)
 				{
-					if (kv.Key == "displayName")
-						data.displayName = kv.Value;
+					if (kv.Key == "name")
+						data.name = kv.Value;
 					else
 						data.AddData(kv.Key, kv.Value);
 				}
 			}
+		}
+
+		public static bool CheckKey(string key)
+		{
+			if (string.IsNullOrEmpty(key))
+				return false;
+			if (key == "name" || key == "file" || key == "type"
+			    || key == "data" || key == "desc" || key == "children")
+				return false;//保留字段
+			return true;
+		}
+
+		public static List<string> GetAllFiles(string path, string extension)
+		{
+			if (!Directory.Exists(path)) return null;
+			var names = new List<string>();
+			var root = new DirectoryInfo(path);
+			var files = root.GetFiles();
+
+			foreach (var file in files)
+			{
+				var ext = Path.GetExtension(file.FullName);
+				if(extension==ext)
+					names.Add(file.FullName);
+			}
+
+			var dirs = root.GetDirectories();
+			foreach (var dir in dirs)
+			{
+				var subNames = GetAllFiles(dir.FullName, extension);
+				foreach (var subName in subNames)
+				{
+					names.Add(subName);
+				}
+			}
+
+			return names;
+		}
+
+		public static void OpenFile(string fullPath)
+		{
+			var path = fullPath.Replace("/", "\\");
+			if (File.Exists(path))
+				System.Diagnostics.Process.Start(path);
 		}
 
 	}

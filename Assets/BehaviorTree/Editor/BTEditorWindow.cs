@@ -7,7 +7,8 @@ namespace BT
 {
 	public class BtEditorWindow : EditorWindow
 	{
-		[MenuItem("Tools/Behavior Editor %&d")]
+		// [MenuItem("Tools/Behavior Editor %&d")]
+		[MenuItem("Tools/Behavior Editor %t")]
 		public static void ShowWindow()
 		{
 			mWindow = GetWindow<BtEditorWindow>("行为树编辑器");
@@ -53,12 +54,13 @@ namespace BT
 				mCurSelectNode = value;
 			}
 		}
+
 		private BtNode mCurSelectNode = null;
 
 		[HideInInspector] public BtGrid BtGrid;
 
 		private BehaviourTree mBehaviourTree;
-		
+
 		private Rect mNodeInspectorRect;
 
 		public void Initialize()
@@ -77,7 +79,7 @@ namespace BT
 			LoadBehaviorTree();
 		}
 
-		void OnGUI()
+		private void OnGUI()
 		{
 			BtGrid.DrawGrid(position.size);
 			GUILayout.BeginHorizontal();
@@ -87,7 +89,7 @@ namespace BT
 					mBehaviourTree.Update(position);
 				}
 				GUILayout.EndVertical();
-				
+
 				BeginWindows();
 				{
 					mNodeInspectorRect = new Rect(position.width - BtConst.RightInspectWidth, 0,
@@ -118,6 +120,7 @@ namespace BT
 				if (node.Graph.DownPointRect.Contains(mousePos))
 					return node;
 			}
+
 			return null;
 		}
 
@@ -134,6 +137,7 @@ namespace BT
 			"Node Inspector",
 			"Node Option",
 		};
+
 		public int Tab { get; set; }
 
 		private int mCurSelectJson = 0;
@@ -188,6 +192,7 @@ namespace BT
 				{
 					System.Diagnostics.Process.Start(BtHelper.jsonPath);
 				}
+
 				if (GUILayout.Button("LuaBT目录"))
 				{
 					System.Diagnostics.Process.Start(BtHelper.behaviorPath);
@@ -251,6 +256,7 @@ namespace BT
 					else
 						BtHelper.SaveBTData(mBehaviourTree);
 				}
+
 				GUI.color = Color.white;
 			}
 			EditorGUILayout.EndVertical();
@@ -282,22 +288,30 @@ namespace BT
 					EditorGUILayout.BeginHorizontal();
 					EditorGUILayout.LabelField("节点数据");
 					GUILayout.FlexibleSpace();
-					if (data.type.StartsWith("tasks/"))
+					if (IsDebug && !string.IsNullOrEmpty(data.type))
 					{
 						if (GUILayout.Button("编辑脚本"))
-							System.Diagnostics.Process.Start(Path.Combine(BtHelper.nodePath, data.type + ".lua"));
+							System.Diagnostics.Process.Start(Path.Combine(BtHelper.nodePath,
+								data.type + "/" + data.file + ".lua"));
+						// BtHelper.OpenFile(Path.Combine(BtHelper.nodePath, data.type + ".lua"));
 					}
-
 					EditorGUILayout.EndHorizontal();
-					data.displayName = EditorGUILayout.TextField("显示名:", data.displayName);
-					EditorGUILayout.LabelField("节点名:", data.name);
+
+					data.name = EditorGUILayout.TextField("显示名:", data.name);
+					if (IsDebug)
+						EditorGUILayout.LabelField("节点名:", data.file);
 					if (node.Guid != mLastNodeGuid)
 					{
 						mLastNodeGuid = node.Guid;
 						mCurChangeDict.Clear();
 					}
 
-					DrawDataInspector(data);
+					if (node.TaskType.Type == TaskType.Root)
+						DrawRootInspector(data);
+					else if (node.TaskType.Type == TaskType.Composite)
+						DrawCompositeInspector(data);
+					else
+						DrawDataInspector(data);
 				}
 				EditorGUILayout.EndVertical();
 			}
@@ -313,6 +327,24 @@ namespace BT
 			if (mCurSelectJson >= mAllShowJsons.Length)
 				mCurSelectJson = mAllShowJsons.Length - 1;
 			mLastSelectJson = -1;
+		}
+
+		private void DrawRootInspector(BtNodeData data)
+		{
+			bool reStart = false;
+			if (data.data != null && data.data.TryGetValue("restart", out var value))
+				reStart = value == "1";
+			reStart = EditorGUILayout.Toggle("restart", reStart);
+			data.AddData("restart", reStart ? "1" : "");
+		}
+
+		private void DrawCompositeInspector(BtNodeData data)
+		{
+			AbortType abortType = AbortType.None;
+			if (data.data != null && data.data.TryGetValue("abort", out var value))
+				AbortType.TryParse(value, out abortType);
+			abortType = (AbortType) EditorGUILayout.EnumPopup("abortType", abortType);
+			data.AddData("abort", abortType.ToString());
 		}
 
 		private void DrawDataInspector(BtNodeData data)
@@ -348,7 +380,7 @@ namespace BT
 				mCurValue = EditorGUILayout.TextField("val:", mCurValue);
 				if (GUILayout.Button(EditorGUIUtility.IconContent("Toolbar Plus"), GUILayout.Width(BTN_ICON_WIDTH)))
 				{
-					if (!string.IsNullOrEmpty(mCurKey))
+					if (BtHelper.CheckKey(mCurKey))
 					{
 						data.AddData(mCurKey, mCurValue);
 						mCurKey = "";
@@ -376,21 +408,21 @@ namespace BT
 		#endregion
 
 		#region NodeOption
-		
+
 		private static Dictionary<string, Dictionary<string, string>> mOptions;
-		
+
 		private Vector2 mDefScrollPos = Vector2.zero;
-		
+
 		private string mDefKey = "";
 		private string mDefValue = "";
 		private string mDefDelKey = null;
 		private Dictionary<string, string> mDefChangeDict = new Dictionary<string, string>();
-		
+
 		private string mAddNode = null;
 		private string mDelNode = null;
 		private string mSelectNode = "";
 		private Dictionary<string, string> mSelectDict;
-		
+
 		private void DrawNodeOption()
 		{
 			if (IsDebug && GUILayout.Button("刷新路径"))
@@ -399,20 +431,22 @@ namespace BT
 			{
 				mOptions = BtHelper.ReadBTNodeOption();
 			}
+
 			GUI.color = Color.green;
 			if (GUILayout.Button("保存配置"))
 			{
 				if (mOptions != null)
 					BtHelper.WriteBtNodeOption(mOptions);
 			}
+
 			GUI.color = Color.white;
-		
+
 			if (!string.IsNullOrEmpty(mDelNode))
 			{
 				mOptions.Remove(mDelNode);
 				mDelNode = null;
 			}
-		
+
 			if (mSelectDict != null && !string.IsNullOrEmpty(mDefDelKey))
 			{
 				mSelectDict.Remove(mDefDelKey);
@@ -420,7 +454,7 @@ namespace BT
 					mDefChangeDict.Remove(mDefDelKey);
 				mDefDelKey = null;
 			}
-		
+
 			foreach (var key in mDefChangeDict.Keys)
 			{
 				if (mSelectDict.ContainsKey(key))
@@ -428,22 +462,22 @@ namespace BT
 				else
 					mSelectDict.Add(key, mDefChangeDict[key]);
 			}
-		
+
 			mDefChangeDict.Clear();
-		
+
 			if (mSelectDict != null)
 			{
 				GUILayout.Space(SPACE_VALUE);
 				EditorGUILayout.BeginVertical("Box");
 				{
-					EditorGUILayout.TextField("修改配置: " + mSelectNode);
-		
+					EditorGUILayout.LabelField("修改配置: " + mSelectNode);
+
 					EditorGUIUtility.labelWidth = 24;
 					foreach (var kv in mSelectDict)
 					{
 						DrawItemOptionInspector(kv);
 					}
-		
+
 					EditorGUILayout.BeginHorizontal();
 					{
 						mDefKey = EditorGUILayout.TextField("key:", mDefKey);
@@ -451,7 +485,7 @@ namespace BT
 						if (GUILayout.Button(EditorGUIUtility.IconContent("Toolbar Plus"),
 							GUILayout.Width(BTN_ICON_WIDTH)))
 						{
-							if (!string.IsNullOrEmpty(mDefKey))
+							if (BtHelper.CheckKey(mDefKey))
 							{
 								mSelectDict.Add(mDefKey, mDefValue);
 								mDefKey = "";
@@ -485,7 +519,7 @@ namespace BT
 						if (!string.IsNullOrEmpty(mAddNode))
 						{
 							var data = new Dictionary<string, string>();
-							data.Add("displayName", "");
+							data.Add("name", "");
 							mOptions.Add(mAddNode, data);
 							mAddNode = null;
 						}
@@ -494,7 +528,7 @@ namespace BT
 				EditorGUILayout.EndHorizontal();
 			}
 		}
-		
+
 		private void DrawItemOptionInspector(KeyValuePair<string, string> kv)
 		{
 			EditorGUILayout.BeginHorizontal();
@@ -508,7 +542,7 @@ namespace BT
 			}
 			EditorGUILayout.EndHorizontal();
 		}
-		
+
 		private void DrawOptionInspector(string key)
 		{
 			EditorGUILayout.BeginHorizontal();
@@ -520,7 +554,7 @@ namespace BT
 					mSelectNode = key;
 					mSelectDict = mOptions[key];
 				}
-		
+
 				if (GUILayout.Button(EditorGUIUtility.IconContent("Toolbar Minus"), GUILayout.Width(BTN_ICON_WIDTH)))
 				{
 					mDelNode = key;
@@ -528,7 +562,7 @@ namespace BT
 			}
 			EditorGUILayout.EndHorizontal();
 		}
-		
+
 		#endregion
 	}
 }

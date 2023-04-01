@@ -1,5 +1,5 @@
 local __bt__ = {
-  name= "rootNode",
+  file= "rootNode",
   type= "",
   data= {
     restart= 1

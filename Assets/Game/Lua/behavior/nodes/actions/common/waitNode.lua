@@ -5,8 +5,8 @@
 	purpose:
 ----------------------------------------------------
 ]]
----@class waitNode : baseNode
-waitNode = simple_class(baseNode)
+---@class waitNode : taskNode
+waitNode = simple_class(taskNode)
 
 local _random = math.random
 
@@ -18,8 +18,8 @@ end
 function waitNode:update()
 	if self.deltaTime >= self.waitTime then
 		--print('等待完成')
-		return nodeState.success
+		return eNodeState.success
 	end
 	self.deltaTime = self.deltaTime + behaviorManager.interval
-	return nodeState.running
+	return eNodeState.running
 end

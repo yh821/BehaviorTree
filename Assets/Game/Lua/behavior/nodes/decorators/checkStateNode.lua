@@ -13,11 +13,11 @@ function checkStateNode:tick()
 	if stateId == self.stateId then
 		if self.children then
 			local v = self.children[1]
-			if v.state == nil or v.state == nodeState.running then
+			if v.state == nil or v.state == eNodeState.running then
 				v.state = v:tick()
 				return v.state
 			end
 		end
 	end
-	return nodeState.failure
+	return eNodeState.failure
 end

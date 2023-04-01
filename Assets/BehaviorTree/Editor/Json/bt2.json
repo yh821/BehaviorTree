@@ -1,42 +1,42 @@
 {
-  "displayName": "root",
+  "name": "root",
   "desc": "",
-  "name": "rootNode",
+  "file": "rootNode",
   "type": null,
-  "posX": 520.0,
-  "posY": 0.0,
+  "posX": 260.0,
+  "posY": 120.0,
   "fold": false,
   "data": {
     "restart": "1"
   },
   "children": [
     {
-      "displayName": "selector",
+      "name": "selector",
       "desc": "",
-      "name": "selectorNode",
+      "file": "selectorNode",
       "type": "composites",
-      "posX": 520.0,
-      "posY": 120.0,
+      "posX": 260.0,
+      "posY": 240.0,
       "fold": false,
       "data": null,
       "children": [
         {
-          "displayName": "parallel",
+          "name": "parallel",
           "desc": "",
-          "name": "parallelNode",
+          "file": "parallelNode",
           "type": "composites",
-          "posX": 390.0,
-          "posY": 240.0,
+          "posX": 130.0,
+          "posY": 360.0,
           "fold": false,
           "data": null,
           "children": [
             {
-              "displayName": "显示对话",
+              "name": "显示对话",
               "desc": "",
-              "name": "speakNode",
+              "file": "speakNode",
               "type": "actions",
-              "posX": 390.0,
-              "posY": 360.0,
+              "posX": 130.0,
+              "posY": 480.0,
               "fold": false,
               "data": {
                 "say": "hello world"
@@ -46,22 +46,22 @@
           ]
         },
         {
-          "displayName": "parallel",
+          "name": "parallel",
           "desc": "",
-          "name": "parallelNode",
+          "file": "parallelNode",
           "type": "composites",
-          "posX": 520.0,
-          "posY": 240.0,
+          "posX": 260.0,
+          "posY": 360.0,
           "fold": false,
           "data": null,
           "children": [
             {
-              "displayName": "显示对话",
+              "name": "显示对话",
               "desc": "",
-              "name": "speakNode",
+              "file": "speakNode",
               "type": "actions",
-              "posX": 520.0,
-              "posY": 360.0,
+              "posX": 260.0,
+              "posY": 480.0,
               "fold": false,
               "data": {
                 "say": "hello world"

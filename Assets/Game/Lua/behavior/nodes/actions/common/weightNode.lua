@@ -5,16 +5,16 @@
 	purpose: 
 ----------------------------------------------------
 ]]
----@class weightNode : baseNode
-weightNode = simple_class(baseNode)
+---@class weightNode : taskNode
+weightNode = simple_class(taskNode)
 
 function weightNode:start()
 	local weight = self.data.weight or 0
 	local score = math.random(0, 100)
 	if score < weight then
-		self.state = nodeState.success
+		self.state = eNodeState.success
 	else
-		self.state = nodeState.failure
+		self.state = eNodeState.failure
 	end
 end
 

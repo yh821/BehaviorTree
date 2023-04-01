@@ -11,13 +11,13 @@ sequenceNode = simple_class(compositeNode)
 function sequenceNode:tick()
 	if self.children then
 		for _, v in ipairs(self.children) do
-			if v.state == nil or v.state == nodeState.running then
+			if v.state == nil or v.state == eNodeState.running then
 				v.state = v:tick()
-				if v.state ~= nodeState.success then
+				if v.state ~= eNodeState.success then
 					return v.state
 				end
 			end
 		end
 	end
-	return nodeState.success
+	return eNodeState.success
 end
