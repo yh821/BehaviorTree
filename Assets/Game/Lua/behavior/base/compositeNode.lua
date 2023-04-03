@@ -7,7 +7,7 @@
 ]]
 ---@class compositeNode : taskNode
 ---@field children taskNode[]
-compositeNode = simple_class(taskNode)
+compositeNode = BaseClass(taskNode)
 
 local _insert = table.insert
 local _remove = table.remove

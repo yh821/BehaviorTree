@@ -2,11 +2,11 @@
 ----------------------------------------------------
 	created: 2020-11-30 21:31
 	author : yuanhuan
-	purpose: 
+	purpose:
 ----------------------------------------------------
 ]]
 ---@class checkStateNode : decoratorNode
-checkStateNode = simple_class(decoratorNode)
+checkStateNode = BaseClass(decoratorNode)
 
 function checkStateNode:tick()
 	local stateId = self.owner:getStateId()

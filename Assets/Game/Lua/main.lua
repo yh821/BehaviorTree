@@ -1,4 +1,4 @@
-require 'common.simple_class'
+require 'common.baseClass'
 require 'common.baseNode'
 require 'common.behaviorTree'
 require 'behaviorManager'

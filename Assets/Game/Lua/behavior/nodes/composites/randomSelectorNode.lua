@@ -2,11 +2,11 @@
 ----------------------------------------------------
 	created: 2020-10-26 10:12
 	author : yuanhuan
-	purpose: 
+	purpose:
 ----------------------------------------------------
 ]]
 ---@class randomSelectorNode : compositeNode
-randomSelectorNode = simple_class(compositeNode)
+randomSelectorNode = BaseClass(compositeNode)
 
 local _random = math.random
 

@@ -6,7 +6,7 @@
 ----------------------------------------------------
 ]]
 ---@class parallelNode : compositeNode
-parallelNode = simple_class(compositeNode)
+parallelNode = BaseClass(compositeNode)
 
 function parallelNode:tick()
 	local state = eNodeState.success

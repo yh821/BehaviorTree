@@ -2,11 +2,11 @@
 ----------------------------------------------------
 	created: 2020-12-07 16:52
 	author : yuanhuan
-	purpose: 
+	purpose:
 ----------------------------------------------------
 ]]
----@class setStateNode : taskNode
-setStateNode = simple_class(taskNode)
+---@class setStateNode : actionNode
+setStateNode = BaseClass(actionNode)
 
 function setStateNode:start()
 	if self.data and self.data.stateId then

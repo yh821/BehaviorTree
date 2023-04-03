@@ -2,12 +2,12 @@
 ----------------------------------------------------
 	created: 2020-10-26 11:22
 	author : yuanhuan
-	purpose: 
+	purpose:
 ----------------------------------------------------
 ]]
 ---@class decoratorNode : taskNode
 ---@field children taskNode[]
-decoratorNode = simple_class(taskNode)
+decoratorNode = BaseClass(taskNode)
 
 local _insert = table.insert
 local _remove = table.remove

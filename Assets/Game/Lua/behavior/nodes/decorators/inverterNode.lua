@@ -2,11 +2,11 @@
 ----------------------------------------------------
 	created: 2020-10-26 11:27
 	author : yuanhuan
-	purpose: 
+	purpose:
 ----------------------------------------------------
 ]]
 ---@class inverterNode : decoratorNode
-inverterNode = simple_class(decoratorNode)
+inverterNode = BaseClass(decoratorNode)
 
 function inverterNode:tick()
 	if self.children then

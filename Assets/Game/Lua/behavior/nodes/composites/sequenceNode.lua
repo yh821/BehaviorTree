@@ -6,7 +6,7 @@
 ----------------------------------------------------
 ]]
 ---@class sequenceNode : compositeNode
-sequenceNode = simple_class(compositeNode)
+sequenceNode = BaseClass(compositeNode)
 
 function sequenceNode:tick()
 	if self.children then

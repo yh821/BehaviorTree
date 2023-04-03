@@ -2,11 +2,11 @@
 ----------------------------------------------------
 	created: 2020-11-23 19:12
 	author : yuanhuan
-	purpose: 
+	purpose:
 ----------------------------------------------------
 ]]
----@class moveToPositionNode : taskNode
-moveToPositionNode = simple_class(taskNode)
+---@class moveToPositionNode : actionNode
+moveToPositionNode = BaseClass(actionNode)
 
 local MapManager = CS.MapManagerInterface
 local IsPositionEqual = MapManager.IsPositionEqual

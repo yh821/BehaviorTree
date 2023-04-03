@@ -5,7 +5,7 @@
 ---
 
 ---@class isActiveNode : conditionNode
-isActiveNode = simple_class(conditionNode)
+isActiveNode = BaseClass(conditionNode)
 
 function isActiveNode:update()
     local entity = self:getSharedVar(self.owner.guid)

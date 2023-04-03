@@ -2,11 +2,11 @@
 ----------------------------------------------------
 	created: 2020-11-23 19:08
 	author : yuanhuan
-	purpose: 
+	purpose:
 ----------------------------------------------------
 ]]
----@class runAnimatorNode : taskNode
-runAnimatorNode = simple_class(taskNode)
+---@class runAnimatorNode : actionNode
+runAnimatorNode = BaseClass(actionNode)
 
 local MapManager = CS.MapManagerInterface
 local RunAnimator = MapManager.RunAnimator

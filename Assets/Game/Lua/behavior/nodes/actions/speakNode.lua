@@ -2,11 +2,11 @@
 ----------------------------------------------------
 	created: 2020-12-07 16:54
 	author : yuanhuan
-	purpose: 
+	purpose:
 ----------------------------------------------------
 ]]
----@class speakNode : taskNode
-speakNode = simple_class(taskNode)
+---@class speakNode : actionNode
+speakNode = BaseClass(actionNode)
 
 function speakNode:start()
 	if self.hudId == nil then

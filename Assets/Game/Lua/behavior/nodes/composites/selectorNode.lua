@@ -6,7 +6,7 @@
 ----------------------------------------------------
 ]]
 ---@class selectorNode : compositeNode
-selectorNode = simple_class(compositeNode)
+selectorNode = BaseClass(compositeNode)
 
 function selectorNode:tick()
 	if self.children then

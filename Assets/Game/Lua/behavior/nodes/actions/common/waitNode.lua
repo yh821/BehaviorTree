@@ -5,8 +5,8 @@
 	purpose:
 ----------------------------------------------------
 ]]
----@class waitNode : taskNode
-waitNode = simple_class(taskNode)
+---@class waitNode : actionNode
+waitNode = BaseClass(actionNode)
 
 local _random = math.random
 

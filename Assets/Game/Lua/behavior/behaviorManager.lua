@@ -2,7 +2,7 @@
 ----------------------------------------------------
 	created: 2020-10-26 11:06
 	author : yuanhuan
-	purpose: 
+	purpose:
 ----------------------------------------------------
 ]]
 ---@class behaviorManager
@@ -58,8 +58,9 @@ function behaviorManager:cleanTree()
 	_behaviorTreeDict = {}
 end
 
-local _genBehaviorTree
-_genBehaviorTree = function(json, parent, tree)
+---@type fun(json:table, parent:taskNode, tree:behaviorTree)
+local __GenBehaviorTree
+__GenBehaviorTree = function(json, parent, tree)
 	if _behaviorNodeDict[json.file] == nil then
 		_behaviorNodeDict[json.file] = true
 		require(_format('lua.behavior.%s.%s', json.type, json.file))
@@ -70,7 +71,7 @@ _genBehaviorTree = function(json, parent, tree)
 		parent:addChild(node)
 		if json.children then
 			for _, v in ipairs(json.children) do
-				_genBehaviorTree(v, node, tree)
+				__GenBehaviorTree(v, node, tree)
 			end
 		end
 	end
@@ -81,7 +82,7 @@ function behaviorManager:loadBehaviorTree(treeName, guid)
 	if json then
 		json.data.guid = guid
 		local tree = behaviorTree:new(nil, json.data)
-		_genBehaviorTree(json.children[1], tree, tree)
+		__GenBehaviorTree(json.children[1], tree, tree)
 		return tree
 	end
 end

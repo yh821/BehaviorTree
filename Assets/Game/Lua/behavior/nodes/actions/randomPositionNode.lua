@@ -2,11 +2,11 @@
 ----------------------------------------------------
 	created: 2020-12-07 16:59
 	author : yuanhuan
-	purpose: 
+	purpose:
 ----------------------------------------------------
 ]]
----@class randomPositionNode : taskNode
-randomPositionNode = simple_class(taskNode)
+---@class randomPositionNode : actionNode
+randomPositionNode = BaseClass(actionNode)
 
 local MapManager = CS.MapManagerInterface
 local IsCanMove = MapManager.IsCanMove

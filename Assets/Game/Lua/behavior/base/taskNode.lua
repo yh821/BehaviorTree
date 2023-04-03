@@ -15,12 +15,12 @@ eNodeState = {
 	failure = 2,
 }
 
----@class taskNode
+---@class taskNode : BaseClass
 ---@field owner behaviorTree
 ---@field id number
 ---@field data table
 ---@field state nodeState
-taskNode = simple_class()
+taskNode = BaseClass()
 
 local _id = 0
 local _openLog = true

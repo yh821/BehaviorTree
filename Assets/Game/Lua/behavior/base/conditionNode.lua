@@ -5,7 +5,7 @@
 ---
 
 ---@class conditionNode : taskNode
-conditionNode = simple_class(taskNode)
+conditionNode = BaseClass(taskNode)
 
 function conditionNode:isCondition()
     return true

@@ -2,11 +2,11 @@
 ----------------------------------------------------
 	created: 2020-10-26 11:22
 	author : yuanhuan
-	purpose: 
+	purpose:
 ----------------------------------------------------
 ]]
 ---@class failureNode : decoratorNode
-failureNode = simple_class(decoratorNode)
+failureNode = BaseClass(decoratorNode)
 
 function failureNode:tick()
 	if self.children then
