@@ -1,6 +1,5 @@
 local _class = {}
 local lua_obj_count = 0
---local class_file_path_table = {}
 
 ---@class BaseClass
 ---@field New fun(...):BaseClass
@@ -17,21 +16,29 @@ function BaseClass(super)
 		lua_obj_count = lua_obj_count + 1
 		-- 生成一个类对象
 		local obj = { _class_type = class_type }
-		setmetatable(obj, { __init = _class[class_type] })
-
+		-- 在初始化之前注册基类方法
+		setmetatable(obj, { __index = _class[class_type] })
 		-- 初始化
-		local _ctor
-		_ctor = function(c, ...)
-			if c.super then
-				_ctor(c.super, ...)
+		do
+			local _ctor
+			_ctor = function(c, ...)
+				if c.super then
+					_ctor(c.super, ...)
+				end
+				if c.__init then
+					c.__init(obj, ...)
+				end
 			end
-			if c.__init then
-				c.__init(obj, ...)
-			end
+			_ctor(class_type, ...)
 		end
-		_ctor(class_type, ...)
-
+		-- 注册一个delete方法
 		obj.DeleteMe = function(self)
+			if Status.IsEditor then
+				if obj.__is_deleted__ then
+					logError("重复调用DeleteMe", debug.traceback())
+				end
+			end
+			obj.__is_deleted__ = true
 			lua_obj_count = lua_obj_count - 1
 			local now_super = self._class_type
 			while now_super do
@@ -48,9 +55,15 @@ function BaseClass(super)
 	local vt = {}
 	_class[class_type] = vt
 
-	setmetatable(class_type, {})
+	local meta = {}
+	meta.__newindex = function(t, k, v)
+		vt[k] = v
+	end
+	meta.__index = vt
+	setmetatable(class_type, meta)
+
 	if super then
-		setmetatable(vt, { __init = function(t, k)
+		setmetatable(vt, { __index = function(t, k)
 			return _class[super][k]
 		end })
 	end
