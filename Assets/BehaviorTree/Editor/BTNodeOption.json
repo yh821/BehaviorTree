@@ -1,7 +1,7 @@
 {
   "logNode": {
-    "name": "打印日志",
-    "log": ""
+    "name": "日志",
+    "msg": ""
   },
   "waitNode": {
     "name": "等待(秒)",
@@ -13,6 +13,19 @@
     "weight": "50"
   },
   "isActiveNode": {
-    "name": "是否激活"
+    "name": "是否激活",
+    "path": ""
+  },
+  "sequenceNode": {
+    "name": "顺序节点"
+  },
+  "selectorNode": {
+    "name": "选择节点"
+  },
+  "parallelNode": {
+    "name": "并行节点"
+  },
+  "inverterNode": {
+    "name": "非"
   }
 }

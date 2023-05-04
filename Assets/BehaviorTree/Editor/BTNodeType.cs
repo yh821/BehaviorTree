@@ -71,7 +71,7 @@ namespace BT
 		/// <summary>
 		/// 节点默认宽度
 		/// </summary>
-		public const int DefaultWidth = 120;
+		public const int DefaultWidth = 90;
 
 		/// <summary>
 		/// 节点默认高度
@@ -97,7 +97,7 @@ namespace BT
 
 	public class BtNodeLua
 	{
-		public string name;
+		public string file;
 		public string type;
 		public Dictionary<string, string> data;
 		public List<BtNodeLua> children;
@@ -111,6 +111,7 @@ namespace BT
 		public string type = string.Empty;
 		public float posX = 0;
 		public float posY = 0;
+		public int index = -1;
 		public bool fold = false;//是否折叠子节点
 
 		public Dictionary<string, string> data;
@@ -270,10 +271,10 @@ namespace BT
 
 		public override int CanAddNodeCount => BtConst.NormalTaskCanAddNode;
 
-		public override GUIStyle NormalStyle => BtNodeStyle.ActionStyle;
-		public override GUIStyle FoldNormalStyle => BtNodeStyle.FoldTaskStyle;
-		public override GUIStyle SelectStyle => BtNodeStyle.SelectTaskStyle;
-		public override GUIStyle FoldSelectStyle => BtNodeStyle.FoldSelectTaskStyle;
+		public override GUIStyle NormalStyle => BtNodeStyle.ConditionStyle;
+		public override GUIStyle FoldNormalStyle => BtNodeStyle.FoldConditionStyle;
+		public override GUIStyle SelectStyle => BtNodeStyle.SelectConditionStyle;
+		public override GUIStyle FoldSelectStyle => BtNodeStyle.FoldSelectConditionStyle;
 
 		public override ErrorType IsValid => ErrorType.None;
 

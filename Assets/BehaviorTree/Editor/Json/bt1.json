@@ -2,141 +2,289 @@
   "name": "root",
   "desc": "",
   "file": "rootNode",
-  "type": null,
-  "posX": 260.0,
-  "posY": 120.0,
+  "type": "",
+  "posX": 400.0,
+  "posY": 60.0,
+  "index": 0,
   "fold": false,
   "data": {
     "restart": "1"
   },
   "children": [
     {
-      "name": "selector",
+      "name": "选择节点",
       "desc": "",
       "file": "selectorNode",
-      "type": "composites",
-      "posX": 260.0,
-      "posY": 240.0,
+      "type": "composites/selectorNode",
+      "posX": 400.0,
+      "posY": 180.0,
+      "index": 1,
       "fold": false,
       "data": {
         "abort": "None"
       },
       "children": [
         {
-          "name": "checkState",
+          "name": "顺序节点",
           "desc": "",
-          "file": "checkStateNode",
-          "type": "decorators",
-          "posX": 130.0,
-          "posY": 360.0,
+          "file": "sequenceNode",
+          "type": "composites/sequenceNode",
+          "posX": 200.0,
+          "posY": 300.0,
+          "index": 2,
           "fold": false,
           "data": {
-            "stateId": "0"
+            "abort": "Both"
           },
           "children": [
             {
-              "name": "sequence",
+              "name": "等待(秒)",
               "desc": "",
-              "file": "sequenceNode",
-              "type": "composites",
-              "posX": 130.0,
-              "posY": 480.0,
+              "file": "waitNode",
+              "type": "actions/common/waitNode",
+              "posX": 0.0,
+              "posY": 420.0,
+              "index": 3,
               "fold": false,
               "data": {
-                "abort": "Self"
+                "min_time": "1",
+                "max_time": "1"
+              },
+              "children": null
+            },
+            {
+              "name": "是否激活",
+              "desc": "",
+              "file": "isActiveNode",
+              "type": "conditions/isActiveNode",
+              "posX": 100.0,
+              "posY": 420.0,
+              "index": 4,
+              "fold": false,
+              "data": {
+                "path": "Sprite"
+              },
+              "children": null
+            },
+            {
+              "name": "是否激活",
+              "desc": "",
+              "file": "isActiveNode",
+              "type": "conditions/isActiveNode",
+              "posX": 200.0,
+              "posY": 420.0,
+              "index": 5,
+              "fold": false,
+              "data": {
+                "path": "Open"
+              },
+              "children": null
+            },
+            {
+              "name": "顺序节点",
+              "desc": "",
+              "file": "sequenceNode",
+              "type": "composites/sequenceNode",
+              "posX": 300.0,
+              "posY": 420.0,
+              "index": 6,
+              "fold": false,
+              "data": {
+                "abort": "Both"
               },
               "children": [
                 {
-                  "name": "几率权重",
+                  "name": "顺序节点",
                   "desc": "",
-                  "file": "weightNode",
-                  "type": "actions",
-                  "posX": 0.0,
-                  "posY": 600.0,
+                  "file": "sequenceNode",
+                  "type": "composites/sequenceNode",
+                  "posX": 250.0,
+                  "posY": 540.0,
+                  "index": 7,
                   "fold": false,
                   "data": {
-                    "weight": "10"
-                  },
-                  "children": null
-                },
-                {
-                  "name": "parallel",
-                  "desc": "",
-                  "file": "parallelNode",
-                  "type": "composites",
-                  "posX": 130.0,
-                  "posY": 600.0,
-                  "fold": false,
-                  "data": {
-                    "abort": "None"
+                    "abort": "Both"
                   },
                   "children": [
                     {
-                      "name": "等待时间",
+                      "name": "是否激活",
                       "desc": "",
-                      "file": "waitNode",
-                      "type": "actions",
-                      "posX": 130.0,
-                      "posY": 720.0,
+                      "file": "isActiveNode",
+                      "type": "conditions/isActiveNode",
+                      "posX": 200.0,
+                      "posY": 660.0,
+                      "index": 8,
                       "fold": false,
                       "data": {
-                        "waitMin": "2",
-                        "waitMax": "5"
+                        "path": "Label"
+                      },
+                      "children": null
+                    },
+                    {
+                      "name": "等待(秒)",
+                      "desc": "",
+                      "file": "waitNode",
+                      "type": "actions/common/waitNode",
+                      "posX": 300.0,
+                      "posY": 660.0,
+                      "index": 9,
+                      "fold": false,
+                      "data": {
+                        "min_time": "1",
+                        "max_time": "1"
                       },
                       "children": null
                     }
                   ]
+                },
+                {
+                  "name": "等待(秒)",
+                  "desc": "",
+                  "file": "waitNode",
+                  "type": "actions/common/waitNode",
+                  "posX": 350.0,
+                  "posY": 540.0,
+                  "index": 10,
+                  "fold": false,
+                  "data": {
+                    "min_time": "1",
+                    "max_time": "1"
+                  },
+                  "children": null
+                }
+              ]
+            },
+            {
+              "name": "等待(秒)",
+              "desc": "",
+              "file": "waitNode",
+              "type": "actions/common/waitNode",
+              "posX": 400.0,
+              "posY": 420.0,
+              "index": 11,
+              "fold": false,
+              "data": {
+                "min_time": "1",
+                "max_time": "1"
+              },
+              "children": null
+            }
+          ]
+        },
+        {
+          "name": "选择节点",
+          "desc": "",
+          "file": "selectorNode",
+          "type": "composites/selectorNode",
+          "posX": 550.0,
+          "posY": 300.0,
+          "index": 12,
+          "fold": false,
+          "data": {
+            "abort": "Both"
+          },
+          "children": [
+            {
+              "name": "是否激活",
+              "desc": "",
+              "file": "isActiveNode",
+              "type": "conditions/isActiveNode",
+              "posX": 500.0,
+              "posY": 420.0,
+              "index": 13,
+              "fold": false,
+              "data": {
+                "path": "BottomHint"
+              },
+              "children": null
+            },
+            {
+              "name": "顺序节点",
+              "desc": "",
+              "file": "sequenceNode",
+              "type": "composites/sequenceNode",
+              "posX": 600.0,
+              "posY": 420.0,
+              "index": 14,
+              "fold": false,
+              "data": {
+                "abort": "None"
+              },
+              "children": [
+                {
+                  "name": "等待(秒)",
+                  "desc": "",
+                  "file": "waitNode",
+                  "type": "actions/common/waitNode",
+                  "posX": 600.0,
+                  "posY": 540.0,
+                  "index": 15,
+                  "fold": false,
+                  "data": {
+                    "min_time": "1",
+                    "max_time": "1"
+                  },
+                  "children": null
+                },
+                {
+                  "name": "等待(秒)",
+                  "desc": "",
+                  "file": "waitNode",
+                  "type": "actions/common/waitNode",
+                  "posX": 700.0,
+                  "posY": 540.0,
+                  "index": 16,
+                  "fold": false,
+                  "data": {
+                    "min_time": "1",
+                    "max_time": "1"
+                  },
+                  "children": null
                 }
               ]
             }
           ]
         },
         {
-          "name": "checkState",
+          "name": "顺序节点",
           "desc": "",
-          "file": "checkStateNode",
-          "type": "decorators",
-          "posX": 260.0,
-          "posY": 360.0,
+          "file": "sequenceNode",
+          "type": "composites/sequenceNode",
+          "posX": 750.0,
+          "posY": 300.0,
+          "index": 17,
           "fold": false,
           "data": {
-            "stateId": "0"
+            "abort": "Lower"
           },
           "children": [
             {
-              "name": "moveToPosition",
+              "name": "是否激活",
               "desc": "",
-              "file": "moveToPositionNode",
-              "type": "actions",
-              "posX": 260.0,
-              "posY": 480.0,
+              "file": "isActiveNode",
+              "type": "conditions/isActiveNode",
+              "posX": 700.0,
+              "posY": 420.0,
+              "index": 18,
               "fold": false,
-              "data": null,
+              "data": {
+                "path": "ScrollView"
+              },
               "children": null
-            }
-          ]
-        },
-        {
-          "name": "checkState",
-          "desc": "",
-          "file": "checkStateNode",
-          "type": "decorators",
-          "posX": 390.0,
-          "posY": 360.0,
-          "fold": false,
-          "data": {
-            "stateId": "0"
-          },
-          "children": [
+            },
             {
-              "name": "moveToPosition",
+              "name": "等待(秒)",
               "desc": "",
-              "file": "moveToPositionNode",
-              "type": "actions",
-              "posX": 390.0,
-              "posY": 480.0,
+              "file": "waitNode",
+              "type": "actions/common/waitNode",
+              "posX": 800.0,
+              "posY": 420.0,
+              "index": 19,
               "fold": false,
-              "data": null,
+              "data": {
+                "min_time": "1",
+                "max_time": "1"
+              },
               "children": null
             }
           ]

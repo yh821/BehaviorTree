@@ -5,50 +5,51 @@ using UnityEngine;
 
 namespace BT
 {
-	public class BtGrid
-	{
-		private readonly Texture _background;
-		public BtGrid()
-		{
-			var path = BtHelper.toolPath + "/GUI/background.png";
-			path = FileUtil.GetProjectRelativePath(path);
-			_background = AssetDatabase.LoadAssetAtPath<Texture>(path);
-		}
+    public class BtGrid
+    {
+        private readonly Texture _background;
 
-		/// <summary>
-		/// 绘制背景格子
-		/// </summary>
-		/// <param name="windowSize"></param>
-		public void DrawGrid(Vector2 windowSize)
-		{
-			Handles();
-			DrawBackground(windowSize);
-		}
+        public BtGrid()
+        {
+            var path = BtHelper.toolPath + "/GUI/background.png";
+            path = FileUtil.GetProjectRelativePath(path);
+            _background = AssetDatabase.LoadAssetAtPath<Texture>(path);
+        }
 
-		/// <summary>
-		/// 拖拽背景
-		/// </summary>
-		private void Handles()
-		{
-			var currentEvent = BtEditorWindow.Window.Event;
-			if (currentEvent.type == EventType.MouseDrag && currentEvent.button == 1)
-			{
-				currentEvent.Use();
-				BtEditorWindow.Window.Position += currentEvent.delta;
-			}
-		}
+        /// <summary>
+        /// 绘制背景格子
+        /// </summary>
+        /// <param name="windowSize"></param>
+        public void DrawGrid(Vector2 windowSize)
+        {
+            Handles();
+            DrawBackground(windowSize);
+        }
 
-		private void DrawBackground(Vector2 windowSize)
-		{
-			var position = BtEditorWindow.Window.Position;
-			var rect = new Rect(0, 0, windowSize.x, windowSize.y);
-			var texCoords = new Rect(-position.x / _background.width,
-				(1.0f - windowSize.y / _background.height) + position.y / _background.height,
-				windowSize.x / _background.width,
-				windowSize.y / _background.height);
-			GUI.DrawTextureWithTexCoords(rect, _background, texCoords);
-		}
-	}
+        /// <summary>
+        /// 拖拽背景
+        /// </summary>
+        private void Handles()
+        {
+            var currentEvent = BtEditorWindow.Window.Event;
+            if (currentEvent.type == EventType.MouseDrag && currentEvent.button == 1)
+            {
+                currentEvent.Use();
+                BtEditorWindow.Window.Position += currentEvent.delta;
+            }
+        }
+
+        private void DrawBackground(Vector2 windowSize)
+        {
+            var position = BtEditorWindow.Window.Position;
+            var rect = new Rect(0, 0, windowSize.x, windowSize.y);
+            var texCoords = new Rect(-position.x / _background.width,
+                (1.0f - windowSize.y / _background.height) + position.y / _background.height,
+                windowSize.x / _background.width,
+                windowSize.y / _background.height);
+            GUI.DrawTextureWithTexCoords(rect, _background, texCoords);
+        }
+    }
 
     public class BtNode
     {
@@ -181,8 +182,10 @@ namespace BT
 
             if (BtEditorWindow.IsDebug)
             {
-                GUI.Label(Graph.LeftUpRect, new GUIContent($"{Graph.RealRect.x},{Graph.RealRect.y}"));
+                GUI.Label(Graph.PosRect, new GUIContent($"{Graph.RealRect.x},{Graph.RealRect.y}"));
             }
+
+            GUI.Label(Graph.IndexRect, Data.index.ToString(), BtNodeStyle.IndexStyle);
         }
 
         /// <summary>
@@ -263,7 +266,8 @@ namespace BT
                 {
                     mIsLinkParent = false;
                     var parent = window.GetMouseTriggerDownPoint(curEvent.mousePosition);
-                    if (parent != null && parent != this && parent.ChildNodeList.Count < parent.TaskType.CanAddNodeCount)
+                    if (parent != null && parent != this &&
+                        parent.ChildNodeList.Count < parent.TaskType.CanAddNodeCount)
                     {
                         parent.ChildNodeList.Add(this);
                         parent.Data.AddChild(Data);
@@ -419,113 +423,127 @@ namespace BT
     }
 
     public class BtNodeGraph
-	{
-		/// <summary>
-		/// 实际节点
-		/// </summary>
-		public Rect RealRect;
+    {
+        /// <summary>
+        /// 实际节点
+        /// </summary>
+        public Rect RealRect;
 
-		/// <summary>
-		/// 节点范围
-		/// </summary>
-		public Rect NodeRect
-		{
-			get
-			{
-				var ret = RealRect;
-				ret.position += BtEditorWindow.Window.Position;
-				return ret;
-			}
-		}
+        /// <summary>
+        /// 节点范围
+        /// </summary>
+        public Rect NodeRect
+        {
+            get
+            {
+                var ret = RealRect;
+                ret.position += BtEditorWindow.Window.Position;
+                return ret;
+            }
+        }
 
-		/// <summary>
-		/// 图标位置
-		/// </summary>
-		public Rect IconRect
-		{
-			get
-			{
-				var rect = NodeRect;
-				return new Rect(rect.x, rect.y, rect.width, BtConst.IconSize);
-			}
-		}
+        /// <summary>
+        /// 图标位置
+        /// </summary>
+        public Rect IconRect
+        {
+            get
+            {
+                var rect = NodeRect;
+                return new Rect(rect.x, rect.y, rect.width, BtConst.IconSize);
+            }
+        }
 
-		/// <summary>
-		/// 文本位置
-		/// </summary>
-		public Rect LabelRect
-		{
-			get
-			{
-				var rect = NodeRect;
-				return new Rect(rect.x, rect.y + BtConst.IconSize,
-					rect.width, rect.height - BtConst.IconSize);
-			}
-		}
+        /// <summary>
+        /// 文本位置
+        /// </summary>
+        public Rect LabelRect
+        {
+            get
+            {
+                var rect = NodeRect;
+                return new Rect(rect.x, rect.y + BtConst.IconSize,
+                    rect.width, rect.height - BtConst.IconSize);
+            }
+        }
 
-		/// <summary>
-		/// 下部连接点
-		/// </summary>
-		public Rect DownPointRect =>
-			new Rect(NodeRect.center.x - BtConst.LinePointLength / 2, NodeRect.yMax,
-				BtConst.LinePointLength, BtConst.LinePointLength);
+        /// <summary>
+        /// 下部连接点
+        /// </summary>
+        public Rect DownPointRect =>
+            new Rect(NodeRect.center.x - BtConst.LinePointLength / 2, NodeRect.yMax,
+                BtConst.LinePointLength, BtConst.LinePointLength);
 
-		/// <summary>
-		/// 上部连接点
-		/// </summary>
-		public Rect UpPointRect =>
-			new Rect(NodeRect.center.x - BtConst.LinePointLength / 2,
-				NodeRect.yMin - BtConst.LinePointLength,
-				BtConst.LinePointLength, BtConst.LinePointLength);
+        /// <summary>
+        /// 上部连接点
+        /// </summary>
+        public Rect UpPointRect =>
+            new Rect(NodeRect.center.x - BtConst.LinePointLength / 2,
+                NodeRect.yMin - BtConst.LinePointLength,
+                BtConst.LinePointLength, BtConst.LinePointLength);
 
-		/// <summary>
-		/// 错误节点范围
-		/// </summary>
-		public Rect ErrorRect =>
-			new Rect(NodeRect.x + 5, NodeRect.y + 5,
-				BtConst.LinePointLength, BtConst.LinePointLength);
+        /// <summary>
+        /// 错误节点范围
+        /// </summary>
+        public Rect ErrorRect =>
+            new Rect(NodeRect.x + 5, NodeRect.y + 5,
+                BtConst.LinePointLength, BtConst.LinePointLength);
 
-		/// <summary>
-		/// 左上显示区
-		/// </summary>
-		public Rect LeftUpRect => new Rect(NodeRect.xMin,
-			NodeRect.yMin - BtConst.DefaultHeight / 2f,
-			BtConst.DefaultWidth, BtConst.DefaultHeight);
-	}
-
-	public static class BtNodeStyle
-	{
-		public static GUIStyle RootStyle => "flow node 0";
-		public static GUIStyle FoldRootStyle => "flow node hex 0";
-		public static GUIStyle SelectRootStyle => "flow node 0 on";
-		public static GUIStyle FoldSelectRootStyle => "flow node hex 0 on";
-
-		public static GUIStyle DecoratorStyle => "flow node 2";
-		public static GUIStyle FoldDecoratorStyle => "flow node hex 2";
-		public static GUIStyle SelectDecoratorStyle => "flow node 2 on";
-		public static GUIStyle FoldSelectDecoratorStyle => "flow node hex 2 on";
-
-		public static GUIStyle CompositeStyle => "flow node 1";
-		public static GUIStyle FoldCompositeStyle => "flow node hex 1";
-		public static GUIStyle SelectCompositeStyle => "flow node 1 on";
-		public static GUIStyle FoldSelectCompositeStyle => "flow node hex 1 on";
-
-		public static GUIStyle ActionStyle => "flow node 3";
-		public static GUIStyle FoldTaskStyle => "flow node hex 3";
-		public static GUIStyle SelectTaskStyle => "flow node 3 on";
-		public static GUIStyle FoldSelectTaskStyle => "flow node hex 3 on";
+        /// <summary>
+        /// 左上显示区
+        /// </summary>
+        public Rect PosRect =>
+            new Rect(NodeRect.xMin + BtConst.DefaultSpacingX, NodeRect.yMin - BtConst.DefaultHeight / 2f,
+                BtConst.DefaultWidth, BtConst.DefaultHeight);
 
 
-		private static GUIContent _RootContent;
-		public static GUIContent RootContent => _RootContent ??= EditorGUIUtility.IconContent("Import");
+        /// <summary>
+        /// 索引显示区
+        /// </summary>
+        public Rect IndexRect =>
+            new Rect(NodeRect.x - BtConst.LinePointLength / 2, NodeRect.y - 8,
+                BtConst.LinePointLength, BtConst.LinePointLength);
+    }
 
-		private static GUIContent _LinePoint;
-		public static GUIContent LinePoint => _LinePoint ??= EditorGUIUtility.IconContent("sv_icon_dot3_pix16_gizmo");
+    public static class BtNodeStyle
+    {
+        public static GUIStyle RootStyle => "flow node 0";
+        public static GUIStyle SelectRootStyle => "flow node 0 on";
 
-		private static GUIContent _WarnPoint;
-		public static GUIContent WarnPoint => _WarnPoint ??= EditorGUIUtility.IconContent("sv_icon_dot4_pix16_gizmo");
+        public static GUIStyle DecoratorStyle => "flow node 2";
+        public static GUIStyle FoldDecoratorStyle => "flow node hex 2";
+        public static GUIStyle SelectDecoratorStyle => "flow node 2 on";
+        public static GUIStyle FoldSelectDecoratorStyle => "flow node hex 2 on";
 
-		private static GUIContent _ErrorPoint;
-		public static GUIContent ErrorPoint => _ErrorPoint ??= EditorGUIUtility.IconContent("sv_icon_dot6_pix16_gizmo");
-	}
+        public static GUIStyle CompositeStyle => "flow node 1";
+        public static GUIStyle FoldCompositeStyle => "flow node hex 1";
+        public static GUIStyle SelectCompositeStyle => "flow node 1 on";
+        public static GUIStyle FoldSelectCompositeStyle => "flow node hex 1 on";
+
+        public static GUIStyle ActionStyle => "flow node 3";
+        public static GUIStyle FoldTaskStyle => "flow node hex 3";
+        public static GUIStyle SelectTaskStyle => "flow node 3 on";
+        public static GUIStyle FoldSelectTaskStyle => "flow node hex 3 on";
+
+        public static GUIStyle ConditionStyle => "flow node 5";
+        public static GUIStyle FoldConditionStyle => "flow node hex 5";
+        public static GUIStyle SelectConditionStyle => "flow node 5 on";
+        public static GUIStyle FoldSelectConditionStyle => "flow node hex 5 on";
+
+
+        public static GUIStyle IndexStyle => "AssetLabel";
+
+
+        private static GUIContent _RootContent;
+        public static GUIContent RootContent => _RootContent ??= EditorGUIUtility.IconContent("Import");
+
+        private static GUIContent _LinePoint;
+        public static GUIContent LinePoint => _LinePoint ??= EditorGUIUtility.IconContent("sv_icon_dot3_pix16_gizmo");
+
+        private static GUIContent _WarnPoint;
+        public static GUIContent WarnPoint => _WarnPoint ??= EditorGUIUtility.IconContent("sv_icon_dot4_pix16_gizmo");
+
+        private static GUIContent _ErrorPoint;
+        public static GUIContent ErrorPoint => _ErrorPoint ??= EditorGUIUtility.IconContent("sv_icon_dot6_pix16_gizmo");
+    }
 }

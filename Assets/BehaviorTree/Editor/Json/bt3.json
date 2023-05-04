@@ -2,12 +2,160 @@
   "name": "root",
   "desc": "",
   "file": "rootNode",
-  "type": "",
-  "posX": 325.0,
-  "posY": 60.0,
+  "type": null,
+  "posX": 250.0,
+  "posY": 120.0,
+  "index": 0,
   "fold": false,
   "data": {
     "restart": "1"
   },
-  "children": null
+  "children": [
+    {
+      "name": "sequence",
+      "desc": "",
+      "file": "sequenceNode",
+      "type": "composites/sequenceNode",
+      "posX": 250.0,
+      "posY": 240.0,
+      "index": 1,
+      "fold": false,
+      "data": {
+        "abort": "None"
+      },
+      "children": [
+        {
+          "name": "sequence",
+          "desc": "",
+          "file": "sequenceNode",
+          "type": "composites/sequenceNode",
+          "posX": 150.0,
+          "posY": 360.0,
+          "index": 2,
+          "fold": false,
+          "data": {
+            "abort": "None"
+          },
+          "children": [
+            {
+              "name": "几率(1-1000)",
+              "desc": "",
+              "file": "weightNode",
+              "type": "actions/common/weightNode",
+              "posX": 50.0,
+              "posY": 480.0,
+              "index": 3,
+              "fold": false,
+              "data": {
+                "weight": "500"
+              },
+              "children": null
+            },
+            {
+              "name": "parallel",
+              "desc": "",
+              "file": "parallelNode",
+              "type": "composites/parallelNode",
+              "posX": 150.0,
+              "posY": 480.0,
+              "index": 4,
+              "fold": false,
+              "data": {
+                "abort": "None"
+              },
+              "children": [
+                {
+                  "name": "日志",
+                  "desc": "",
+                  "file": "logNode",
+                  "type": "actions/common/logNode",
+                  "posX": 50.0,
+                  "posY": 600.0,
+                  "index": 5,
+                  "fold": false,
+                  "data": {
+                    "msg": "111"
+                  },
+                  "children": null
+                },
+                {
+                  "name": "等待(秒)",
+                  "desc": "",
+                  "file": "waitNode",
+                  "type": "actions/common/waitNode",
+                  "posX": 150.0,
+                  "posY": 600.0,
+                  "index": 6,
+                  "fold": false,
+                  "data": {
+                    "min_time": "1",
+                    "max_time": "3"
+                  },
+                  "children": null
+                },
+                {
+                  "name": "日志",
+                  "desc": "",
+                  "file": "logNode",
+                  "type": "actions/common/logNode",
+                  "posX": 250.0,
+                  "posY": 600.0,
+                  "index": 7,
+                  "fold": false,
+                  "data": {
+                    "msg": "222"
+                  },
+                  "children": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "等待(秒)",
+          "desc": "",
+          "file": "waitNode",
+          "type": "actions/common/waitNode",
+          "posX": 250.0,
+          "posY": 360.0,
+          "index": 8,
+          "fold": false,
+          "data": {
+            "min_time": "1",
+            "max_time": "3"
+          },
+          "children": null
+        },
+        {
+          "name": "等待(秒)",
+          "desc": "",
+          "file": "waitNode",
+          "type": "actions/common/waitNode",
+          "posX": 350.0,
+          "posY": 360.0,
+          "index": 9,
+          "fold": false,
+          "data": {
+            "min_time": "1",
+            "max_time": "3"
+          },
+          "children": null
+        },
+        {
+          "name": "日志",
+          "desc": "",
+          "file": "logNode",
+          "type": "actions/common/logNode",
+          "posX": 350.0,
+          "posY": 480.0,
+          "index": 10,
+          "fold": false,
+          "data": {
+            "msg": ""
+          },
+          "children": null
+        }
+      ]
+    }
+  ]
 }

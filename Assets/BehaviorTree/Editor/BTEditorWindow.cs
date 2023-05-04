@@ -57,7 +57,7 @@ namespace BT
 
 		private BtNode mCurSelectNode = null;
 
-		[HideInInspector] public BtGrid BtGrid;
+		private BtGrid BtGrid;
 
 		private BehaviourTree mBehaviourTree;
 
@@ -291,8 +291,7 @@ namespace BT
 					if (IsDebug && !string.IsNullOrEmpty(data.type))
 					{
 						if (GUILayout.Button("编辑脚本"))
-							System.Diagnostics.Process.Start(Path.Combine(BtHelper.nodePath,
-								data.type + "/" + data.file + ".lua"));
+							System.Diagnostics.Process.Start(Path.Combine(BtHelper.nodePath, data.type + ".lua"));
 						// BtHelper.OpenFile(Path.Combine(BtHelper.nodePath, data.type + ".lua"));
 					}
 					EditorGUILayout.EndHorizontal();

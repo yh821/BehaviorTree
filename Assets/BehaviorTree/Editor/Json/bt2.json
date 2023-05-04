@@ -3,8 +3,9 @@
   "desc": "",
   "file": "rootNode",
   "type": null,
-  "posX": 260.0,
+  "posX": 250.0,
   "posY": 120.0,
+  "index": 0,
   "fold": false,
   "data": {
     "restart": "1"
@@ -14,32 +15,39 @@
       "name": "selector",
       "desc": "",
       "file": "selectorNode",
-      "type": "composites",
-      "posX": 260.0,
+      "type": "composites/selectorNode",
+      "posX": 250.0,
       "posY": 240.0,
+      "index": 1,
       "fold": false,
-      "data": null,
+      "data": {
+        "abort": "None"
+      },
       "children": [
         {
           "name": "parallel",
           "desc": "",
           "file": "parallelNode",
-          "type": "composites",
-          "posX": 130.0,
+          "type": "composites/parallelNode",
+          "posX": 200.0,
           "posY": 360.0,
+          "index": 2,
           "fold": false,
-          "data": null,
+          "data": {
+            "abort": "None"
+          },
           "children": [
             {
-              "name": "显示对话",
+              "name": "日志",
               "desc": "",
-              "file": "speakNode",
-              "type": "actions",
-              "posX": 130.0,
+              "file": "logNode",
+              "type": "actions/common/logNode",
+              "posX": 200.0,
               "posY": 480.0,
+              "index": 3,
               "fold": false,
               "data": {
-                "say": "hello world"
+                "msg": "111"
               },
               "children": null
             }
@@ -49,22 +57,26 @@
           "name": "parallel",
           "desc": "",
           "file": "parallelNode",
-          "type": "composites",
-          "posX": 260.0,
+          "type": "composites/parallelNode",
+          "posX": 300.0,
           "posY": 360.0,
+          "index": 4,
           "fold": false,
-          "data": null,
+          "data": {
+            "abort": "None"
+          },
           "children": [
             {
-              "name": "显示对话",
+              "name": "日志",
               "desc": "",
-              "file": "speakNode",
-              "type": "actions",
-              "posX": 260.0,
+              "file": "logNode",
+              "type": "actions/common/logNode",
+              "posX": 300.0,
               "posY": 480.0,
+              "index": 5,
               "fold": false,
               "data": {
-                "say": "hello world"
+                "msg": "222"
               },
               "children": null
             }

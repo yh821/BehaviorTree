@@ -80,8 +80,8 @@ namespace BT
 		{
 			if (tree != null)
 			{
-				WalkNodeData(tree.Root);
-				string content = JsonConvert.SerializeObject(tree.Root.Data, Formatting.Indented);
+				FlushNodeData(tree.Root);
+				var content = JsonConvert.SerializeObject(tree.Root.Data, Formatting.Indented);
 				File.WriteAllText(Path.Combine(jsonPath, $"{tree.Name}.json"), content);
 
 				var luaData = SwitchToLua(tree.Root.Data);
@@ -123,36 +123,63 @@ namespace BT
 			}
 		}
 
-		public static void WalkNodeData(BtNode parent)
+		public static void FlushNodeData(BtNode node)
 		{
-			parent.Data.file = parent.NodeName;
-			parent.Data.SetPosition(parent.Graph.RealRect.position);
+			WalkNodeData(node);
+			node_index = 0;
+			WalkNodeIndex(node);
+		}
 
-			if (parent.IsHaveChild)
+		public static void WalkNodeData(BtNode node)
+		{
+			node.Data.file = node.NodeName;
+			node.Data.SetPosition(node.Graph.RealRect.position);
+			if (node.IsHaveChild)
 			{
-				foreach (var node in parent.ChildNodeList)
+				foreach (var child in node.ChildNodeList)
 				{
-					WalkNodeData(node);
+					WalkNodeData(child);
 				}
-
-				parent.Data.children.Sort((a, b) =>
-				{
-					if (a.posX > b.posX)
-						return 1;
-					if (a.posX < b.posX)
-						return -1;
-					if (a.posY > b.posY)
-						return 1;
-					if (a.posY < b.posY)
-						return -1;
-					return 0;
-				});
+				node.ChildNodeList.Sort(SortNodeList);
+				node.Data.children.Sort(SortNodeList);
 			}
+		}
+
+		private static int node_index;
+		public static void WalkNodeIndex(BtNode node)
+		{
+			node.Data.index = node_index++;
+			if (node.IsHaveChild)
+				foreach (var child in node.ChildNodeList)
+					WalkNodeIndex(child);
+		}
+
+		private static int SortNodeList(BtNode a, BtNode b)
+		{
+			return SortNodeList(a.Data.posX, a.Data.posY, b.Data.posX, b.Data.posY);
+		}
+
+		private static int SortNodeList(BtNodeData a, BtNodeData b)
+		{
+			return SortNodeList(a.posX, a.posY, b.posX, b.posY);
+		}
+
+		private static int SortNodeList(float ax, float ay, float bx, float by)
+		{
+			if (ax > bx)
+				return 1;
+			if (ax < bx)
+				return -1;
+			if (ay > by)
+				return 1;
+			if (ay < by)
+				return -1;
+			return 0;
 		}
 
 		public static BtNodeLua SwitchToLua(BtNodeData data)
 		{
-			var lua = new BtNodeLua { name = data.file, type = data.type, data = data.data };
+			var lua = new BtNodeLua {file = data.file, type = data.type, data = data.data};
 			if (data.children != null && data.children.Count > 0)
 			{
 				lua.children = new List<BtNodeLua>();
@@ -208,12 +235,12 @@ namespace BT
 			}
 		}
 
-		public static BtNode AddChildNode(BehaviourTree owner, BtNode parent, string name)
+		public static BtNode AddChildNode(BehaviourTree owner, BtNode parent, string file)
 		{
 			var pos = parent.Graph.RealRect.position;
-			if (!mNodeTypeDict.ContainsKey(name))
-				throw new ArgumentNullException(name, "找不到该类型");
-			var data = new BtNodeData(name, mNodeTypeDict[name], pos.x,
+			if (!mNodeTypeDict.ContainsKey(file))
+				throw new ArgumentNullException(file, "找不到该类型");
+			var data = new BtNodeData(file, mNodeTypeDict[file], pos.x,
 				pos.y + BtConst.DefaultHeight + BtConst.DefaultSpacingY);
 			parent.Data.AddChild(data);
 			return AddChildNode(owner, parent, data);
@@ -354,7 +381,7 @@ namespace BT
 				return false;
 			if (key == "name" || key == "file" || key == "type"
 			    || key == "data" || key == "desc" || key == "children")
-				return false;//保留字段
+				return false; //保留字段
 			return true;
 		}
 
@@ -368,7 +395,7 @@ namespace BT
 			foreach (var file in files)
 			{
 				var ext = Path.GetExtension(file.FullName);
-				if(extension==ext)
+				if (extension == ext)
 					names.Add(file.FullName);
 			}
 
@@ -391,6 +418,5 @@ namespace BT
 			if (File.Exists(path))
 				System.Diagnostics.Process.Start(path);
 		}
-
 	}
 }
