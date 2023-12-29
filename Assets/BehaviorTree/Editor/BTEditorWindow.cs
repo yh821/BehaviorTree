@@ -190,12 +190,12 @@ namespace BT
 			{
 				if (GUILayout.Button("JsonBT目录"))
 				{
-					System.Diagnostics.Process.Start(BtHelper.jsonPath);
+					System.Diagnostics.Process.Start(BtHelper.JsonPath);
 				}
 
 				if (GUILayout.Button("LuaBT目录"))
 				{
-					System.Diagnostics.Process.Start(BtHelper.behaviorPath);
+					System.Diagnostics.Process.Start(BtHelper.BehaviorPath);
 				}
 			}
 			EditorGUILayout.EndHorizontal();
@@ -208,7 +208,7 @@ namespace BT
 			{
 				mLastSelectJson = mCurSelectJson;
 				var fileName = mAllShowJsons[mCurSelectJson];
-				var file = Path.Combine(BtHelper.jsonPath, $"{fileName}.json");
+				var file = Path.Combine(BtHelper.JsonPath, $"{fileName}.json");
 				mBehaviourTree = BtHelper.LoadBehaviorTree(file);
 				if (mBehaviourTree == null)
 				{
@@ -233,7 +233,7 @@ namespace BT
 						GUILayout.Width(BTN_ICON_WIDTH)))
 					{
 						var fileName = mAllShowJsons[mCurSelectJson];
-						var filePath = Path.Combine(BtHelper.jsonPath, $"{fileName}.json");
+						var filePath = Path.Combine(BtHelper.JsonPath, $"{fileName}.json");
 						File.Delete(filePath);
 						LoadBehaviorTree();
 					}
@@ -254,7 +254,7 @@ namespace BT
 					if (mBehaviourTree != null && mBehaviourTree.BrokenNodeDict.Count > 0)
 						EditorUtility.DisplayDialog("提示", "有节点未连上", "确定");
 					else
-						BtHelper.SaveBTData(mBehaviourTree);
+						BtHelper.SaveBtData(mBehaviourTree);
 				}
 
 				GUI.color = Color.white;
@@ -291,7 +291,7 @@ namespace BT
 					if (IsDebug && !string.IsNullOrEmpty(data.type))
 					{
 						if (GUILayout.Button("编辑脚本"))
-							System.Diagnostics.Process.Start(Path.Combine(BtHelper.nodePath, data.type + ".lua"));
+							System.Diagnostics.Process.Start(Path.Combine(BtHelper.NodePath, data.type + ".lua"));
 						// BtHelper.OpenFile(Path.Combine(BtHelper.nodePath, data.type + ".lua"));
 					}
 					EditorGUILayout.EndHorizontal();
@@ -318,7 +318,7 @@ namespace BT
 
 		private void LoadBehaviorTree()
 		{
-			var files = Directory.GetFiles(BtHelper.jsonPath, "*.json", SearchOption.AllDirectories);
+			var files = Directory.GetFiles(BtHelper.JsonPath, "*.json", SearchOption.AllDirectories);
 			var fileNames = new List<string>();
 			foreach (var file in files)
 				fileNames.Add(Path.GetFileNameWithoutExtension(file));
@@ -428,7 +428,7 @@ namespace BT
 				BtHelper.CleanPath();
 			if (GUILayout.Button("读取配置"))
 			{
-				mOptions = BtHelper.ReadBTNodeOption();
+				mOptions = BtHelper.ReadBtNodeOption();
 			}
 
 			GUI.color = Color.green;

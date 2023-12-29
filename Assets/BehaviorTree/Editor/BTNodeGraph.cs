@@ -11,7 +11,7 @@ namespace BT
 
         public BtGrid()
         {
-            var path = BtHelper.toolPath + "/GUI/background.png";
+            var path = BtHelper.ToolPath + "/GUI/background.png";
             path = FileUtil.GetProjectRelativePath(path);
             _background = AssetDatabase.LoadAssetAtPath<Texture>(path);
         }
@@ -176,8 +176,7 @@ namespace BT
             else
             {
                 GUI.Label(Graph.NodeRect, "", style);
-                GUI.Label(Graph.IconRect, icon);
-                GUI.Label(Graph.LabelRect, showLabel);
+                GUI.DrawTexture(Graph.IconRect, icon);
             }
 
             if (BtEditorWindow.IsDebug)
@@ -450,7 +449,10 @@ namespace BT
             get
             {
                 var rect = NodeRect;
-                return new Rect(rect.x, rect.y, rect.width, BtConst.IconSize);
+                var w = BtConst.IconSize;
+                var x = rect.x + (rect.width - w) / 2;
+                var y = rect.y + (rect.height - w) / 2;
+                return new Rect(x, y, w, w);
             }
         }
 
@@ -533,10 +535,6 @@ namespace BT
 
         public static GUIStyle IndexStyle => "AssetLabel";
 
-
-        private static GUIContent _RootContent;
-        public static GUIContent RootContent => _RootContent ??= EditorGUIUtility.IconContent("Import");
-
         private static GUIContent _LinePoint;
         public static GUIContent LinePoint => _LinePoint ??= EditorGUIUtility.IconContent("sv_icon_dot3_pix16_gizmo");
 
@@ -545,5 +543,23 @@ namespace BT
 
         private static GUIContent _ErrorPoint;
         public static GUIContent ErrorPoint => _ErrorPoint ??= EditorGUIUtility.IconContent("sv_icon_dot6_pix16_gizmo");
+
+
+        private static Texture _rootIcon;
+
+        public static Texture RootIcon
+        {
+            get
+            {
+                if (_rootIcon == null)
+                {
+                    var path = BtHelper.ToolPath + "/GUI/root.png";
+                    path = FileUtil.GetProjectRelativePath(path);
+                    _rootIcon = AssetDatabase.LoadAssetAtPath<Texture>(path);
+                }
+
+                return _rootIcon;
+            }
+        }
     }
 }

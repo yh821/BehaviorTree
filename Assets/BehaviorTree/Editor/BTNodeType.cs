@@ -57,7 +57,7 @@ namespace BT
 		/// <summary>
 		/// 图标尺寸
 		/// </summary>
-		public const float IconSize = 30;
+		public const float IconSize = 40;
 
 		/// <summary>
 		/// 左侧监视面板宽度
@@ -208,7 +208,7 @@ namespace BT
 			BelongNode = node;
 		}
 
-		public virtual GUIContent GetIcon()
+		public virtual Texture GetIcon()
 		{
 			return null;
 		}
@@ -223,9 +223,9 @@ namespace BT
 		{
 		}
 
-		public override GUIContent GetIcon()
+		public override Texture GetIcon()
 		{
-			return null;//BtNodeStyle.RootContent;
+			return BtNodeStyle.RootIcon;
 		}
 	}
 
