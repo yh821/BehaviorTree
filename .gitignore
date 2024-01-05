@@ -10,5 +10,9 @@ UserSettings
 *.csproj
 *.sln
 *.userprefs
+Assets/Gizmos
+Assets/Gizmos.meta
 Assets/CommonTools
 Assets/CommonTools.meta
+Assets/Behavior Designer
+Assets/Behavior Designer.meta

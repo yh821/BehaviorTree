@@ -3,23 +3,23 @@
     "name": "日志",
     "msg": ""
   },
-  "waitNode": {
+  "WaitNode": {
     "name": "等待(秒)",
     "min_time": "1",
     "max_time": "3"
   },
-  "weightNode": {
-    "name": "几率(1-1000)",
+  "WeightNode": {
+    "name": "权重(1-1000)",
     "weight": "50"
   },
   "isActiveNode": {
     "name": "是否激活",
     "path": ""
   },
-  "sequenceNode": {
+  "SequenceNode": {
     "name": "顺序节点"
   },
-  "selectorNode": {
+  "SelectorNode": {
     "name": "选择节点"
   },
   "parallelNode": {
@@ -27,5 +27,35 @@
   },
   "inverterNode": {
     "name": "非"
+  },
+  "RandomPositionNode": {
+    "name": "随机位置"
+  },
+  "MoveToPositionNode": {
+    "name": "移动到位置"
+  },
+  "IsInViewNode": {
+    "name": "在视野内",
+    "ViewRange": "5"
+  },
+  "AttackNode": {
+    "name": "攻击"
+  },
+  "RandomSelectorNode": {
+    "name": "随机选择"
+  },
+  "TriggerNode": {
+    "name": "状态触发",
+    "triggerValue": "0",
+    "triggerType": "0"
+  },
+  "SetTriggerNode": {
+    "name": "设置状态",
+    "triggerValue": "0"
+  },
+  "IsTriggerNode": {
+    "name": "检查状态",
+    "triggerType": "0",
+    "triggerValue": "0"
   }
 }
