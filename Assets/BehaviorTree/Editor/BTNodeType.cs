@@ -84,7 +84,12 @@ namespace BT
 		/// <summary>
 		/// 左侧监视面板高度
 		/// </summary>
-		public const float InspectHeight = 500;
+		public const float NodeInspectHeight = 300;
+
+		/// <summary>
+		/// 左侧监视面板高度
+		/// </summary>
+		public const float TreeInspectHeight = 440;
 
 		/// <summary>
 		/// 节点默认宽度
