@@ -26,7 +26,7 @@ end
 
 function CompositeNode:GetAbortType()
     if self._abort_type == nil then
-        local abort = self.data and self.data.abort
+        local abort = self.data and self.data.abortType
         self._abort_type = eAbortType[abort] or eAbortType.None
     end
     return self._abort_type

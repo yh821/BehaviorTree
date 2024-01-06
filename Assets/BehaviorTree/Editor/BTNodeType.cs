@@ -79,12 +79,12 @@ namespace BT
 		/// <summary>
 		/// 左侧监视面板宽度
 		/// </summary>
-		public const float RightInspectWidth = 240;
+		public const float InspectWidth = 240;
 
 		/// <summary>
 		/// 左侧监视面板高度
 		/// </summary>
-		public const float RightInspectHeight = 500;
+		public const float InspectHeight = 500;
 
 		/// <summary>
 		/// 节点默认宽度
@@ -110,12 +110,18 @@ namespace BT
 		/// 根节点名
 		/// </summary>
 		public const string RootName = "RootNode";
+
+		public const string Restart = "restart";
+		public const string AbortType = "abortType";
+		public const string TriggerType = "triggerType";
+		public const string TriggerValue = "triggerValue";
 	}
 
 	public class BtNodeLua
 	{
 		public string file;
 		public string type;
+		public Dictionary<string, string> sharedData;
 		public Dictionary<string, string> data;
 		public List<BtNodeLua> children;
 	}
@@ -132,6 +138,7 @@ namespace BT
 		public bool fold = false; //是否折叠子节点
 
 		public Dictionary<string, string> data;
+		public Dictionary<string, string> sharedData; //共享数据,只存放在根节点里
 
 		public List<BtNodeData> children;
 
@@ -172,6 +179,22 @@ namespace BT
 			if (data != null)
 				clone.data = new Dictionary<string, string>(data);
 			return clone;
+		}
+
+		public void AddSharedData(string key, string value)
+		{
+			if (sharedData == null)
+				sharedData = new Dictionary<string, string>();
+			if (sharedData.ContainsKey(key))
+				sharedData[key] = value;
+			else
+				sharedData.Add(key, value);
+		}
+
+		public void RemoveSharedData(string key)
+		{
+			if (sharedData != null && sharedData.ContainsKey(key))
+				sharedData.Remove(key);
 		}
 
 		public void SetPos(float x, float y)
@@ -385,7 +408,6 @@ namespace BT
 		private static GUIContent _errorPoint;
 		public static GUIContent ErrorPoint => _errorPoint ??= EditorGUIUtility.IconContent("sv_icon_dot6_pix16_gizmo");
 
-
 		private static Texture _rootIcon;
 
 		public static Texture RootIcon
@@ -398,7 +420,6 @@ namespace BT
 					path = FileUtil.GetProjectRelativePath(path);
 					_rootIcon = AssetDatabase.LoadAssetAtPath<Texture>(path);
 				}
-
 				return _rootIcon;
 			}
 		}
@@ -415,7 +436,6 @@ namespace BT
 					path = FileUtil.GetProjectRelativePath(path);
 					_abortSelfLogo = AssetDatabase.LoadAssetAtPath<Texture>(path);
 				}
-
 				return _abortSelfLogo;
 			}
 		}
@@ -432,7 +452,6 @@ namespace BT
 					path = FileUtil.GetProjectRelativePath(path);
 					_abortLowerLogo = AssetDatabase.LoadAssetAtPath<Texture>(path);
 				}
-
 				return _abortLowerLogo;
 			}
 		}
@@ -450,7 +469,6 @@ namespace BT
 					path = FileUtil.GetProjectRelativePath(path);
 					_abortBothLogo = AssetDatabase.LoadAssetAtPath<Texture>(path);
 				}
-
 				return _abortBothLogo;
 			}
 		}

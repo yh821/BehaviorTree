@@ -95,13 +95,18 @@ function BehaviorManager:__LoadBehaviorTree(file)
         local bt = BehaviorTree.New(json.data, file)
         local root = json.children[1]
         __GenBehaviorTree(root, bt, bt)
+        if json.sharedData then
+            for k, v in pairs(json.sharedData) do
+                bt:SetSharedVar(k, v)
+            end
+        end
         return bt
     end
 end
 
 ---@param file string
 ---@return BehaviorTree
-function BehaviorManager:BindBehaviorTree(gameObject, file)
+function BehaviorManager:BindBehaviorTree(gameObject, file, shared_data)
     local bt = _behaviorTreeDict[gameObject]
     if bt then
         print_error("实体已经绑定了行为树:", bt.file)
@@ -111,6 +116,11 @@ function BehaviorManager:BindBehaviorTree(gameObject, file)
     if bt == nil then
         print_error("找不到行为树:", file)
         return
+    end
+    if shared_data and type(shared_data) == "table" then
+        for k, v in pairs(shared_data) do
+            bt:SetSharedVar(k, v)
+        end
     end
     bt.gameObject = gameObject
     _behaviorTreeDict[gameObject] = bt
@@ -146,6 +156,12 @@ end
 
 function BehaviorManager:GetGlobalVar(key)
     return _globalVariables[key]
+end
+
+function BehaviorManager:PopGlobalVar(key)
+    local value = _globalVariables[key]
+    _globalVariables[key] = nil
+    return value
 end
 
 function BehaviorManager.ParseVector3(str, is_temp)

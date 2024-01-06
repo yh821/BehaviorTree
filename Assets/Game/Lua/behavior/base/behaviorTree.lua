@@ -108,6 +108,15 @@ function BehaviorTree:GetSharedVar(key)
 end
 
 ---@param key string
+---@return any
+function BehaviorTree:PopSharedVar(key)
+    local bb = self:GetBlackboard()
+    local value = bb[key]
+    bb[key] = nil
+    return value
+end
+
+---@param key string
 ---@param value any
 function BehaviorTree:SetGlobalVar(key, value)
     BehaviorManager:SetGlobalVar(key, value)
@@ -117,6 +126,12 @@ end
 ---@return any
 function BehaviorTree:GetGlobalVar(key)
     return BehaviorManager:GetGlobalVar(key)
+end
+
+---@param key string
+---@return any
+function BehaviorTree:PopGlobalVar(key)
+    return BehaviorManager:PopGlobalVar(key)
 end
 
 ---@param value number

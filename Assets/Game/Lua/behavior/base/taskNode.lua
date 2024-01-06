@@ -159,6 +159,12 @@ function TaskNode:GetSharedVar(key)
 end
 
 ---@param key string
+---@return any
+function TaskNode:PopSharedVar(key)
+    return self.owner:PopSharedVar(key)
+end
+
+---@param key string
 ---@param value any
 function TaskNode:SetGlobalVar(key, value)
     return self.owner:SetGlobalVar(key, value)
@@ -168,6 +174,12 @@ end
 ---@return any
 function TaskNode:GetGlobalVar(key)
     return self.owner:GetGlobalVar(key)
+end
+
+---@param key string
+---@return any
+function TaskNode:PopGlobalVar(key)
+    return self.owner:PopGlobalVar(key)
 end
 
 ---@param value number

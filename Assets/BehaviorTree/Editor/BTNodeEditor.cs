@@ -52,51 +52,62 @@ namespace BT
 			set
 			{
 				if (value != mCurSelectNode)
+				{
 					Tab = 0;
+					mCurChangeDict.Clear();
+				}
 				mCurSelectNode = value;
 			}
 		}
 
 		private BtNode mCurSelectNode = null;
 
-		private BtGrid BtGrid;
+		private BtGrid mBtGrid;
 
-		private BehaviourTree mBehaviourTree;
+		public BehaviourTree CurBehaviourTree
+		{
+			get => mCurBehaviourTree;
+			set
+			{
+				if (value != mCurBehaviourTree)
+					mCurChangeSharedDict.Clear();
+				mCurBehaviourTree = value;
+			}
+		}
+
+		private BehaviourTree mCurBehaviourTree;
 
 		private Rect mNodeInspectorRect;
+		private Rect mTreeInspectorRect;
 
 		public void Initialize()
 		{
-			if (mBehaviourTree == null)
-				mBehaviourTree = new BehaviourTree();
-
-			if (BtGrid == null)
-				BtGrid = new BtGrid();
-
-			mNodeInspectorRect = new Rect(position.width - BtConst.RightInspectWidth, 0,
-				BtConst.RightInspectWidth, BtConst.RightInspectHeight);
-
+			if (CurBehaviourTree == null) CurBehaviourTree = new BehaviourTree();
+			if (mBtGrid == null) mBtGrid = new BtGrid();
 			BtHelper.LoadNodeFile();
-
 			LoadBehaviorTree();
 		}
 
 		private void OnGUI()
 		{
-			BtGrid.DrawGrid(position.size);
+			mBtGrid.DrawGrid(position.size);
 			GUILayout.BeginHorizontal();
 			{
 				GUILayout.BeginVertical();
 				{
-					mBehaviourTree.Update(position);
+					CurBehaviourTree.Update(position);
 				}
 				GUILayout.EndVertical();
 
 				BeginWindows();
 				{
-					mNodeInspectorRect = new Rect(position.width - BtConst.RightInspectWidth, 0,
-						BtConst.RightInspectWidth, BtConst.RightInspectHeight);
+					mNodeInspectorRect = new Rect(position.width - BtConst.InspectWidth, 0,
+						BtConst.InspectWidth, BtConst.InspectHeight);
 					GUILayout.Window(0, mNodeInspectorRect, NodeInspectorWindow, "Inspector");
+
+					mTreeInspectorRect = new Rect(position.width - BtConst.InspectWidth, BtConst.InspectHeight,
+						BtConst.InspectWidth, BtConst.InspectWidth);
+					GUILayout.Window(1, mTreeInspectorRect, TreeInspectorWindow, "行为树数据");
 				}
 				EndWindows();
 			}
@@ -117,12 +128,11 @@ namespace BT
 
 		public BtNode GetMouseTriggerDownPoint(Vector2 mousePos)
 		{
-			foreach (var node in mBehaviourTree.NodeDict.Values)
+			foreach (var node in CurBehaviourTree.NodeDict.Values)
 			{
 				if (node.Graph.DownPointRect.Contains(mousePos))
 					return node;
 			}
-
 			return null;
 		}
 
@@ -134,25 +144,29 @@ namespace BT
 		private const int BTN_ICON_WIDTH = 28;
 		private const string DEFAULE_BT_NAME = "新建行为树";
 
-		private static string[] TAB =
+		private static readonly string[] TAB =
 		{
 			"Node Inspector",
 			"Node Option",
 		};
 
-		public int Tab { get; set; }
+		private int Tab { get; set; }
 
 		private int mCurSelectJson = 0;
 		private int mLastSelectJson = 0;
-		private string[] mAllShowJsons;
+		private string[] mAllShowJson;
+
+		private bool mIsSettingNode = false;
 
 		private string mCurKey = string.Empty;
 		private string mCurValue = string.Empty;
 		private string mCurDelKey = null;
-		private Dictionary<string, string> mCurChangeDict = new Dictionary<string, string>();
+		private readonly Dictionary<string, string> mCurChangeDict = new Dictionary<string, string>();
 
-		private string mLastNodeGuid = string.Empty;
-		private bool mIsSettingNode = false;
+		private string mCurSharedKey = string.Empty;
+		private string mCurSharedValue = string.Empty;
+		private string mCurSharedDelKey = null;
+		private readonly Dictionary<string, string> mCurChangeSharedDict = new Dictionary<string, string>();
 
 		public static bool IsAutoAlign = true;
 		public static bool IsShowPos = false;
@@ -162,7 +176,7 @@ namespace BT
 
 		public static BtNode CopyNode = null;
 
-		private void NodeInspectorWindow(int win_id)
+		private void NodeInspectorWindow(int winId)
 		{
 			Tab = GUILayout.Toolbar(Tab, TAB);
 			GUILayout.Space(SPACE_VALUE);
@@ -175,6 +189,49 @@ namespace BT
 					DrawNodeOption();
 					break;
 			}
+		}
+
+		private void TreeInspectorWindow(int winId)
+		{
+			var data = CurBehaviourTree.Root.Data;
+			EditorGUIUtility.labelWidth = 24;
+			mTreeScrollPos = EditorGUILayout.BeginScrollView(mTreeScrollPos);
+			{
+				if (!string.IsNullOrEmpty(mCurSharedDelKey))
+				{
+					data.RemoveSharedData(mCurSharedDelKey);
+					if (mCurChangeSharedDict.ContainsKey(mCurSharedDelKey))
+						mCurChangeSharedDict.Remove(mCurSharedDelKey);
+					mCurSharedDelKey = null;
+				}
+
+				foreach (var key in mCurChangeSharedDict.Keys)
+					data.AddSharedData(key, mCurChangeSharedDict[key]);
+
+				mCurChangeSharedDict.Clear();
+
+				if (data.sharedData != null)
+					DrawSharedItemInspector(data.sharedData, mCurChangeSharedDict);
+			}
+			EditorGUILayout.EndScrollView();
+
+			EditorGUILayout.BeginHorizontal();
+			{
+				mCurSharedKey = EditorGUILayout.TextField("key:", mCurSharedKey);
+				mCurSharedValue = EditorGUILayout.TextField("val:", mCurSharedValue);
+				if (GUILayout.Button(EditorGUIUtility.IconContent("Toolbar Plus"),
+					GUILayout.Width(BTN_ICON_WIDTH)))
+				{
+					if (BtHelper.CheckKey(mCurSharedKey))
+					{
+						data.AddSharedData(mCurSharedKey, mCurSharedValue);
+						mCurSharedKey = "";
+						mCurSharedValue = "";
+						GUIUtility.keyboardControl = 0;
+					}
+				}
+			}
+			EditorGUILayout.EndHorizontal();
 		}
 
 		private void DrawNodeInspector()
@@ -210,35 +267,35 @@ namespace BT
 			if (GUILayout.Button("加载行为树"))
 				LoadBehaviorTree();
 
-			if (mAllShowJsons != null && mAllShowJsons.Length > 0 && mLastSelectJson != mCurSelectJson)
+			if (mAllShowJson != null && mAllShowJson.Length > 0 && mLastSelectJson != mCurSelectJson)
 			{
 				mLastSelectJson = mCurSelectJson;
-				var fileName = mAllShowJsons[mCurSelectJson];
+				var fileName = mAllShowJson[mCurSelectJson];
 				var file = Path.Combine(BtHelper.JsonPath, $"{fileName}.json");
-				mBehaviourTree = BtHelper.LoadBehaviorTree(file);
-				if (mBehaviourTree == null)
+				CurBehaviourTree = BtHelper.LoadBehaviorTree(file);
+				if (CurBehaviourTree == null)
 				{
 					Debug.LogErrorFormat("读取行为树失败, {0}", file);
-					mBehaviourTree = new BehaviourTree(DEFAULE_BT_NAME);
+					CurBehaviourTree = new BehaviourTree(DEFAULE_BT_NAME);
 				}
 			}
 
 			if (GUILayout.Button(DEFAULE_BT_NAME))
 			{
-				mBehaviourTree = new BehaviourTree(DEFAULE_BT_NAME);
+				CurBehaviourTree = new BehaviourTree(DEFAULE_BT_NAME);
 			}
 
-			if (mAllShowJsons != null && mAllShowJsons.Length > 0)
+			if (mAllShowJson != null && mAllShowJson.Length > 0)
 			{
 				GUILayout.Space(SPACE_VALUE);
 				EditorGUIUtility.labelWidth = 40;
 				EditorGUILayout.BeginHorizontal();
 				{
-					mCurSelectJson = EditorGUILayout.Popup("行为树:", mCurSelectJson, mAllShowJsons);
+					mCurSelectJson = EditorGUILayout.Popup("行为树:", mCurSelectJson, mAllShowJson);
 					if (GUILayout.Button(EditorGUIUtility.IconContent("Toolbar Minus"),
 						GUILayout.Width(BTN_ICON_WIDTH)))
 					{
-						var fileName = mAllShowJsons[mCurSelectJson];
+						var fileName = mAllShowJson[mCurSelectJson];
 						var filePath = Path.Combine(BtHelper.JsonPath, $"{fileName}.json");
 						File.Delete(filePath);
 						LoadBehaviorTree();
@@ -251,18 +308,17 @@ namespace BT
 			GUILayout.Space(SPACE_VALUE);
 			EditorGUILayout.BeginVertical("Box");
 			{
-				if (mBehaviourTree != null)
-					mBehaviourTree.Name = EditorGUILayout.TextField("行为树名:", mBehaviourTree.Name);
+				if (CurBehaviourTree != null)
+					CurBehaviourTree.Name = EditorGUILayout.TextField("行为树名:", CurBehaviourTree.Name);
 
 				GUI.color = Color.green;
 				if (GUILayout.Button("保存行为树"))
 				{
-					if (mBehaviourTree != null && mBehaviourTree.BrokenNodeDict.Count > 0)
+					if (CurBehaviourTree != null && CurBehaviourTree.BrokenNodeDict.Count > 0)
 						EditorUtility.DisplayDialog("提示", "有节点未连上", "确定");
 					else
-						BtHelper.SaveBtData(mBehaviourTree);
+						BtHelper.SaveBtData(CurBehaviourTree);
 				}
-
 				GUI.color = Color.white;
 			}
 			EditorGUILayout.EndVertical();
@@ -277,7 +333,7 @@ namespace BT
 				if (mIsSettingNode)
 				{
 					EditorGUILayout.LabelField("节点说明", GUILayout.MaxWidth(50));
-					data.desc = EditorGUILayout.TextArea(data.desc, GUILayout.MaxWidth(BtConst.RightInspectWidth));
+					data.desc = EditorGUILayout.TextArea(data.desc, GUILayout.MaxWidth(BtConst.InspectWidth));
 				}
 				else
 				{
@@ -308,18 +364,12 @@ namespace BT
 							System.Diagnostics.Process.Start(Path.Combine(BtHelper.NodePath, data.type + ".lua"));
 						// BtHelper.OpenFile(Path.Combine(BtHelper.nodePath, data.type + ".lua"));
 					}
-
 					EditorGUILayout.EndHorizontal();
 
 					data.name = EditorGUILayout.TextField("显示名:", data.name);
-					if (IsDebug)
-						EditorGUILayout.LabelField("节点名:", data.file);
-					if (node.Guid != mLastNodeGuid)
-					{
-						mLastNodeGuid = node.Guid;
-						mCurChangeDict.Clear();
-					}
+					if (IsDebug) EditorGUILayout.LabelField("节点名:", data.file);
 
+					mDataScrollPos = EditorGUILayout.BeginScrollView(mDataScrollPos);
 					switch (node.NodeType.Type)
 					{
 						case TaskType.Composite:
@@ -338,6 +388,26 @@ namespace BT
 							DrawDataInspector(data);
 							break;
 					}
+					EditorGUILayout.EndScrollView();
+
+					EditorGUILayout.BeginHorizontal();
+					{
+						EditorGUIUtility.labelWidth = 24;
+						mCurKey = EditorGUILayout.TextField("key:", mCurKey);
+						mCurValue = EditorGUILayout.TextField("val:", mCurValue);
+						if (GUILayout.Button(EditorGUIUtility.IconContent("Toolbar Plus"),
+							GUILayout.Width(BTN_ICON_WIDTH)))
+						{
+							if (BtHelper.CheckKey(mCurKey))
+							{
+								data.AddData(mCurKey, mCurValue);
+								mCurKey = "";
+								mCurValue = "";
+								GUIUtility.keyboardControl = 0;
+							}
+						}
+					}
+					EditorGUILayout.EndHorizontal();
 				}
 				EditorGUILayout.EndVertical();
 			}
@@ -346,49 +416,48 @@ namespace BT
 		private void LoadBehaviorTree()
 		{
 			var files = Directory.GetFiles(BtHelper.JsonPath, "*.json", SearchOption.AllDirectories);
-			mAllShowJsons = files.Select(Path.GetFileNameWithoutExtension).ToArray();
-			if (mCurSelectJson >= mAllShowJsons.Length)
-				mCurSelectJson = mAllShowJsons.Length - 1;
+			mAllShowJson = files.Select(Path.GetFileNameWithoutExtension).ToArray();
+			if (mCurSelectJson >= mAllShowJson.Length)
+				mCurSelectJson = mAllShowJson.Length - 1;
 			mLastSelectJson = -1;
 		}
 
 		private void DrawRootInspector(BtNodeData data)
 		{
 			var reStart = false;
-			if (data.data != null && data.data.TryGetValue("restart", out var value))
+			if (data.data != null && data.data.TryGetValue(BtConst.Restart, out var value))
 				reStart = value == "1";
-			reStart = EditorGUILayout.Toggle("restart", reStart);
-			data.AddData("restart", reStart ? "1" : "");
+			reStart = EditorGUILayout.Toggle(BtConst.Restart, reStart);
+			data.AddData(BtConst.Restart, reStart ? "1" : "");
 		}
 
 		private void DrawAbortInspector(BtNodeData data)
 		{
 			var abortType = AbortType.None;
-			if (data.data != null && data.data.TryGetValue("abort", out var value))
+			if (data.data != null && data.data.TryGetValue(BtConst.AbortType, out var value))
 				Enum.TryParse(value, out abortType);
-			abortType = (AbortType) EditorGUILayout.EnumPopup("abortType", abortType);
-			data.AddData("abort", abortType.ToString());
+			abortType = (AbortType) EditorGUILayout.EnumPopup(BtConst.AbortType, abortType);
+			data.AddData(BtConst.AbortType, abortType.ToString());
 		}
 
 		private void DrawTriggerInspector(BtNodeData data)
 		{
 			var type = TriggerType.Equals;
-			if (data.data != null && data.data.TryGetValue("triggerType", out var typeStr))
+			if (data.data != null && data.data.TryGetValue(BtConst.TriggerType, out var typeStr))
 				Enum.TryParse(typeStr, out type);
-			type = (TriggerType) EditorGUILayout.EnumPopup("triggerType", type);
-			data.AddData("triggerType", type.ToString());
+			type = (TriggerType) EditorGUILayout.EnumPopup(BtConst.TriggerType, type);
+			data.AddData(BtConst.TriggerType, type.ToString());
 
 			var value = 0;
-			if (data.data != null && data.data.TryGetValue("triggerValue", out var valueStr))
+			if (data.data != null && data.data.TryGetValue(BtConst.TriggerValue, out var valueStr))
 				int.TryParse(valueStr, out value);
-			value = EditorGUILayout.IntField("triggerValue", value);
-			data.AddData("triggerValue", value.ToString());
+			value = EditorGUILayout.IntField(BtConst.TriggerValue, value);
+			data.AddData(BtConst.TriggerValue, value.ToString());
 		}
 
 		private void DrawDataInspector(BtNodeData data)
 		{
 			EditorGUIUtility.labelWidth = 24;
-
 			if (!string.IsNullOrEmpty(mCurDelKey))
 			{
 				data.RemoveData(mCurDelKey);
@@ -403,40 +472,40 @@ namespace BT
 			mCurChangeDict.Clear();
 
 			if (data.data != null)
-				foreach (var kv in data.data)
-					DrawItemInspector(kv);
-
-			EditorGUILayout.BeginHorizontal();
-			{
-				mCurKey = EditorGUILayout.TextField("key:", mCurKey);
-				mCurValue = EditorGUILayout.TextField("val:", mCurValue);
-				if (GUILayout.Button(EditorGUIUtility.IconContent("Toolbar Plus"), GUILayout.Width(BTN_ICON_WIDTH)))
-				{
-					if (BtHelper.CheckKey(mCurKey))
-					{
-						data.AddData(mCurKey, mCurValue);
-						mCurKey = "";
-						mCurValue = "";
-						GUIUtility.keyboardControl = 0;
-					}
-				}
-			}
-			EditorGUILayout.EndHorizontal();
+				DrawItemInspector(data.data, mCurChangeDict);
 		}
 
-		private void DrawItemInspector(KeyValuePair<string, string> kv)
+		private void DrawItemInspector(IDictionary<string, string> data, IDictionary<string, string> dict)
 		{
-			EditorGUILayout.BeginHorizontal();
+			foreach (var kv in data)
 			{
+				EditorGUILayout.BeginHorizontal();
 				EditorGUILayout.LabelField("key:", kv.Key);
-				mCurChangeDict[kv.Key] = EditorGUILayout.TextField("val:", kv.Value, GUILayout.MaxWidth(80));
+				dict[kv.Key] = EditorGUILayout.TextField("val:", kv.Value, GUILayout.MaxWidth(80));
 				if (GUILayout.Button(EditorGUIUtility.IconContent("Toolbar Minus"), GUILayout.Width(BTN_ICON_WIDTH)))
 				{
 					mCurDelKey = kv.Key;
 					GUIUtility.keyboardControl = 0;
 				}
+				EditorGUILayout.EndHorizontal();
 			}
-			EditorGUILayout.EndHorizontal();
+		}
+
+		private void DrawSharedItemInspector(IDictionary<string, string> data, IDictionary<string, string> dict)
+		{
+			foreach (var kv in data)
+			{
+				EditorGUILayout.BeginHorizontal();
+				EditorGUILayout.LabelField("key:", kv.Key);
+				dict[kv.Key] = EditorGUILayout.TextField("val:", kv.Value, GUILayout.MaxWidth(80));
+				if (GUILayout.Button(EditorGUIUtility.IconContent("Toolbar Minus"),
+					GUILayout.Width(BTN_ICON_WIDTH)))
+				{
+					mCurSharedDelKey = kv.Key;
+					GUIUtility.keyboardControl = 0;
+				}
+				EditorGUILayout.EndHorizontal();
+			}
 		}
 
 		#endregion
@@ -446,6 +515,8 @@ namespace BT
 		private static Dictionary<string, Dictionary<string, string>> mOptions;
 
 		private Vector2 mDefScrollPos = Vector2.zero;
+		private Vector2 mDataScrollPos = Vector2.zero;
+		private Vector2 mTreeScrollPos = Vector2.zero;
 
 		private string mDefKey = "";
 		private string mDefValue = "";
@@ -472,7 +543,6 @@ namespace BT
 				if (mOptions != null)
 					BtHelper.WriteBtNodeOption(mOptions);
 			}
-
 			GUI.color = Color.white;
 
 			if (!string.IsNullOrEmpty(mDelNode))
@@ -782,7 +852,7 @@ namespace BT
 
 			if (NodeType.Type == TaskType.Abort)
 			{
-				if (Data.data != null && Data.data.TryGetValue("abort", out var value))
+				if (Data.data != null && Data.data.TryGetValue(BtConst.AbortType, out var value))
 				{
 					Enum.TryParse<AbortType>(value, out var abortType);
 					switch (abortType)
@@ -829,7 +899,7 @@ namespace BT
 			//点击
 			else if (curEvent.type == EventType.MouseDown && curEvent.button == 0)
 			{
-				if (curEvent.mousePosition.x >= canvas.width - BtConst.RightInspectWidth)
+				if (curEvent.mousePosition.x >= canvas.width - BtConst.InspectWidth)
 				{
 					//window.CurSelectNode = null;
 				}
@@ -981,8 +1051,8 @@ namespace BT
 			if (data == null)
 			{
 				data = new BtNodeData(BtConst.RootName, string.Empty,
-					(BtEditorWindow.Window.position.width - BtConst.RightInspectWidth) / 2, 50);
-				data.AddData("restart", "1");
+					(BtEditorWindow.Window.position.width - BtConst.InspectWidth) / 2, 50);
+				data.AddData(BtConst.Restart, "1");
 			}
 
 			Root = new BtNode(this, null, data);

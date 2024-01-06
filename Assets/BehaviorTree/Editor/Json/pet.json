@@ -10,6 +10,9 @@
   "data": {
     "restart": "1"
   },
+  "sharedData": {
+    "treeShared2": "2"
+  },
   "children": [
     {
       "name": "选择节点",
@@ -21,8 +24,9 @@
       "index": 1,
       "fold": false,
       "data": {
-        "abort": "None"
+        "abortType": "None"
       },
+      "sharedData": null,
       "children": [
         {
           "name": "顺序节点",
@@ -34,8 +38,9 @@
           "index": 2,
           "fold": false,
           "data": {
-            "abort": "Self"
+            "abortType": "Self"
           },
+          "sharedData": null,
           "children": [
             {
               "name": "在视野内",
@@ -49,6 +54,7 @@
               "data": {
                 "ViewRange": "12"
               },
+              "sharedData": null,
               "children": null
             },
             {
@@ -61,8 +67,9 @@
               "index": 4,
               "fold": false,
               "data": {
-                "abort": "None"
+                "abortType": "None"
               },
+              "sharedData": null,
               "children": [
                 {
                   "name": "顺序节点",
@@ -74,8 +81,9 @@
                   "index": 5,
                   "fold": false,
                   "data": {
-                    "abort": "None"
+                    "abortType": "None"
                   },
+                  "sharedData": null,
                   "children": [
                     {
                       "name": "随机权重",
@@ -89,6 +97,7 @@
                       "data": {
                         "weight": "500"
                       },
+                      "sharedData": null,
                       "children": null
                     },
                     {
@@ -104,6 +113,7 @@
                         "min_time": "1",
                         "max_time": "3"
                       },
+                      "sharedData": null,
                       "children": null
                     }
                   ]
@@ -118,8 +128,9 @@
                   "index": 8,
                   "fold": false,
                   "data": {
-                    "abort": "None"
+                    "abortType": "None"
                   },
+                  "sharedData": null,
                   "children": [
                     {
                       "name": "随机位置",
@@ -133,6 +144,7 @@
                       "data": {
                         "pos": "TargetPos"
                       },
+                      "sharedData": null,
                       "children": null
                     },
                     {
@@ -147,6 +159,7 @@
                       "data": {
                         "pos": "RandomPos"
                       },
+                      "sharedData": null,
                       "children": null
                     }
                   ]
@@ -168,6 +181,7 @@
             "pos": "TargetPos",
             "speed": "10"
           },
+          "sharedData": null,
           "children": null
         }
       ]

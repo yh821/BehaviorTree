@@ -10,6 +10,7 @@
   "data": {
     "restart": "1"
   },
+  "sharedData": {},
   "children": [
     {
       "name": "选择节点",
@@ -21,8 +22,9 @@
       "index": 1,
       "fold": false,
       "data": {
-        "abort": "None"
+        "abortType": "None"
       },
+      "sharedData": null,
       "children": [
         {
           "name": "顺序节点",
@@ -34,8 +36,9 @@
           "index": 2,
           "fold": false,
           "data": {
-            "abort": "Lower"
+            "abortType": "Lower"
           },
+          "sharedData": null,
           "children": [
             {
               "name": "在视野内",
@@ -49,6 +52,7 @@
               "data": {
                 "ViewRange": "3"
               },
+              "sharedData": null,
               "children": null
             },
             {
@@ -63,6 +67,7 @@
               "data": {
                 "pos": "TargetPos"
               },
+              "sharedData": null,
               "children": null
             },
             {
@@ -77,6 +82,7 @@
               "data": {
                 "pos": "TargetPos"
               },
+              "sharedData": null,
               "children": null
             }
           ]
@@ -91,8 +97,9 @@
           "index": 6,
           "fold": false,
           "data": {
-            "abort": "None"
+            "abortType": "None"
           },
+          "sharedData": null,
           "children": [
             {
               "name": "随机权重",
@@ -106,6 +113,7 @@
               "data": {
                 "weight": "500"
               },
+              "sharedData": null,
               "children": null
             },
             {
@@ -121,6 +129,7 @@
                 "min_time": "1",
                 "max_time": "3"
               },
+              "sharedData": null,
               "children": null
             }
           ]
@@ -135,8 +144,9 @@
           "index": 9,
           "fold": false,
           "data": {
-            "abort": "None"
+            "abortType": "None"
           },
+          "sharedData": null,
           "children": [
             {
               "name": "随机位置",
@@ -151,6 +161,7 @@
                 "center": "0,0,0",
                 "range": "5"
               },
+              "sharedData": null,
               "children": null
             },
             {
@@ -165,6 +176,7 @@
               "data": {
                 "pos": "RandomPos"
               },
+              "sharedData": null,
               "children": null
             }
           ]

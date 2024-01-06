@@ -96,6 +96,12 @@ namespace BT
 				content = content.Replace(m.Value, word);
 			}
 
+			mc = Regex.Matches(content, "\\s*[a-zA-Z0-9_]+= \\{\\},?");
+			foreach (Match m in mc)
+			{
+				content = content.Replace(m.Value, "");
+			}
+
 			mc = Regex.Matches(content, "\\s*[a-zA-Z0-9_]+= null,?");
 			foreach (Match m in mc)
 			{
@@ -179,7 +185,7 @@ namespace BT
 
 		public static BtNodeLua SwitchToLua(BtNodeData data)
 		{
-			var lua = new BtNodeLua {file = data.file, type = data.type, data = data.data};
+			var lua = new BtNodeLua {file = data.file, type = data.type, data = data.data, sharedData = data.sharedData};
 			if (data.children != null && data.children.Count > 0)
 			{
 				lua.children = new List<BtNodeLua>();

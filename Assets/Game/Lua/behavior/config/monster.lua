@@ -9,14 +9,14 @@ local __bt__ = {
       file= "SelectorNode",
       type= "composites/SelectorNode",
       data= {
-        abort= "None"
+        abortType= "None"
       },
       children= {
         {
           file= "SequenceNode",
           type= "composites/SequenceNode",
           data= {
-            abort= "Lower"
+            abortType= "Lower"
           },
           children= {
             {
@@ -46,7 +46,7 @@ local __bt__ = {
           file= "SequenceNode",
           type= "composites/SequenceNode",
           data= {
-            abort= "None"
+            abortType= "None"
           },
           children= {
             {
@@ -70,7 +70,7 @@ local __bt__ = {
           file= "SequenceNode",
           type= "composites/SequenceNode",
           data= {
-            abort= "None"
+            abortType= "None"
           },
           children= {
             {

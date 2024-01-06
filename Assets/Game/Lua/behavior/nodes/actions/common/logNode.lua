@@ -7,10 +7,18 @@
 LogNode = BaseClass(ActionNode)
 
 function LogNode:Start()
+    local msg
+    if self.data.sharedVar then
+        self:print(self.data.sharedVar)
+        msg = self:GetSharedVar(self.data.sharedVar)
+    end
+    if msg == nil then
+        msg = self.data.msg
+    end
     if self.data.is_error then
-        print_error(self.data.msg)
+        self:print_error(msg)
     else
-        print_log(self.data.msg)
+        self:print(msg)
     end
     return eNodeState.Success
 end
