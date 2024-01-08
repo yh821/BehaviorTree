@@ -151,7 +151,7 @@ namespace BT
 		{
 			this.file = file;
 			this.type = type;
-			SetPos(x, y);
+			SetPosition(x, y);
 			name = file.Replace("Node", "");
 		}
 
@@ -202,20 +202,20 @@ namespace BT
 				sharedData.Remove(key);
 		}
 
-		public void SetPos(float x, float y)
-		{
-			posX = x;
-			posY = y;
-		}
-
 		public Vector2 GetPosition()
 		{
 			return new Vector2(posX, posY);
 		}
 
+		public void SetPosition(float x, float y)
+		{
+			posX = x;
+			posY = y;
+		}
+
 		public void SetPosition(Vector2 pos)
 		{
-			SetPos(pos.x, pos.y);
+			SetPosition(pos.x, pos.y);
 		}
 	}
 

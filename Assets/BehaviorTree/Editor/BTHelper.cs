@@ -252,11 +252,16 @@ namespace BT
 			return AddChildNode(owner, parent, data);
 		}
 
+		public static BtNode PasteChild(BehaviourTree owner, BtNode parent, Vector2 pos)
+		{
+			return PasteChild(owner, parent, pos.x, pos.y);
+		}
+
 		public static BtNode PasteChild(BehaviourTree owner, BtNode parent, float x, float y)
 		{
 			var nodeData = BtEditorWindow.CopyNode.Data.Clone();
-			nodeData.SetPos(x, y);
-			parent.Data.AddChild(nodeData);
+			nodeData.SetPosition(x, y);
+			parent?.Data.AddChild(nodeData);
 			return AddChildNode(owner, parent, nodeData);
 		}
 
@@ -265,7 +270,7 @@ namespace BT
 			data.SetPosition(owner.GenNodePos(data.GetPosition())); //避免重叠
 			var child = new BtNode(owner, parent, data);
 			owner.AddNode(child);
-			parent.ChildNodeList.Add(child);
+			parent?.ChildNodeList.Add(child);
 			return child;
 		}
 

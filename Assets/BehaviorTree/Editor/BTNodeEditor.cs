@@ -131,15 +131,37 @@ namespace BT
 			}
 			GUILayout.EndHorizontal();
 
-			if (Event.type == EventType.KeyUp)
+			if (Event.current.rawType == EventType.KeyDown) EventCallBack(Event.current);
+		}
+
+		private void EventCallBack(Event e)
+		{
+			//单个按键
+			if (e.keyCode == KeyCode.Delete)
 			{
-				if (Event.keyCode == KeyCode.Delete)
+				if (CurSelectNode != null && !CurSelectNode.IsRoot)
 				{
-					if (CurSelectNode != null && !CurSelectNode.IsRoot)
-					{
-						Event.Use();
-						BtHelper.RemoveChild(CurSelectNode);
-					}
+					Event.Use();
+					BtHelper.RemoveChild(CurSelectNode);
+					CurSelectNode = null;
+				}
+			}
+			//LeftControl的组合键
+			if ((e.modifiers & EventModifiers.Control) != 0)
+			{
+				switch (e.keyCode)
+				{
+					case KeyCode.C:
+						CopyNode = Window.CurSelectNode;
+						break;
+					case KeyCode.V:
+						if (CopyNode == null) break;
+						var tree = Window.CurBehaviourTree;
+						var pos = e.mousePosition - Window.Position;
+						var clone = BtHelper.PasteChild(tree, null, pos);
+						Window.CurSelectNode = clone;
+						tree.AddBrokenNode(clone);
+						break;
 				}
 			}
 		}
@@ -1003,19 +1025,26 @@ namespace BT
 			}
 		}
 
-		public void Callback(object obj)
+		private void Callback(object obj)
 		{
 			var name = obj.ToString();
-			if (name == "Delete")
-				BtHelper.RemoveChild(this);
-			else if (name == "Copy")
-				BtEditorWindow.CopyNode = this;
-			else if (name == "Paste")
-				BtHelper.PasteChild(Owner, this, Data.posX, Data.posY + BtConst.DefaultHeight);
-			else
+			switch (name)
 			{
-				var node = BtHelper.AddChildNode(Owner, this, name);
-				BtHelper.SetNodeDefaultData(node, name);
+				case "Delete":
+					BtHelper.RemoveChild(this);
+					break;
+				case "Copy":
+					BtEditorWindow.CopyNode = this;
+					break;
+				case "Paste":
+					var clone = BtHelper.PasteChild(Owner, this, Data.posX, Data.posY + BtConst.DefaultHeight);
+					BtEditorWindow.Window.CurSelectNode = clone;
+					Owner.AddBrokenNode(clone);
+					break;
+				default:
+					var node = BtHelper.AddChildNode(Owner, this, name);
+					BtHelper.SetNodeDefaultData(node, name);
+					break;
 			}
 		}
 
