@@ -351,6 +351,7 @@ namespace BT
 			if (node != null)
 			{
 				var data = node.Data;
+				GUI.enabled = data.enabled;
 				EditorGUILayout.BeginHorizontal();
 
 				if (mIsSettingNode)
@@ -399,7 +400,8 @@ namespace BT
 						case TaskType.Root:
 							DrawRootInspector(data);
 							break;
-						case TaskType.Abort:
+						case TaskType.Selector:
+						case TaskType.Sequence:
 							DrawAbortInspector(data);
 							break;
 						case TaskType.Trigger:
@@ -431,6 +433,7 @@ namespace BT
 					EditorGUILayout.EndHorizontal();
 				}
 				EditorGUILayout.EndVertical();
+				GUI.enabled = true;
 			}
 		}
 
@@ -804,11 +807,13 @@ namespace BT
 
 		private void DrawNode()
 		{
-			if (IsHaveChild && !Data.fold)
+			if (!Data.visable) return;
+			if (IsHaveChild)
 			{
 				mBzStartPos = Graph.DownPointRect.center;
 				foreach (var node in ChildNodeList)
 				{
+					if (!node.Data.visable) continue;
 					mBzEndPos = node.Graph.UpPointRect.center;
 					var center = mBzStartPos.x + (mBzEndPos.x - mBzStartPos.x) / 2;
 					Handles.DrawBezier(mBzStartPos, mBzEndPos, new Vector3(center, mBzStartPos.y),
@@ -832,15 +837,15 @@ namespace BT
 				GUI.Label(Graph.UpPointRect, BtNodeStyle.ErrorPoint);
 
 			if (NodeType.CanAddNodeCount > 0)
+			{
 				GUI.Label(Graph.DownPointRect,
 					NodeType.IsValid == ErrorType.Error ? BtNodeStyle.ErrorPoint : BtNodeStyle.LinePoint);
+				if (Data.fold) GUI.Label(Graph.DownPlusRect, BtNodeStyle.FoldoutPlus);
+			}
 
 			GUIStyle style;
-			if (IsSelected)
-				style = Data.fold ? NodeType.FoldSelectStyle : NodeType.SelectStyle;
-			else
-				style = Data.fold ? NodeType.FoldNormalStyle : NodeType.NormalStyle;
-
+			if (Data.enabled) style = IsSelected ? NodeType.SelectStyle : NodeType.NormalStyle;
+			else style = IsSelected ? BtNodeStyle.SelectRootStyle : BtNodeStyle.RootStyle;
 			var showLabel = Data.name;
 			if (!BtEditorWindow.IsDebug)
 				showLabel = $"\n{showLabel}";
@@ -878,7 +883,7 @@ namespace BT
 				GUI.DrawTexture(Graph.IconRect, icon);
 			}
 
-			if (NodeType.Type == TaskType.Abort)
+			if (NodeType.Type == TaskType.Selector || NodeType.Type == TaskType.Sequence)
 			{
 				if (Data.data != null && Data.data.TryGetValue(BtConst.AbortType, out var value))
 				{
@@ -902,6 +907,14 @@ namespace BT
 				GUI.Label(Graph.PosRect, new GUIContent($"{Graph.RealRect.x},{Graph.RealRect.y}"));
 			if (BtEditorWindow.IsShowIndex)
 				GUI.Label(Graph.IndexRect, Data.index.ToString(), BtNodeStyle.IndexStyle);
+
+
+			if (!IsRoot && BtEditorWindow.IsDebug || !Data.isOn)
+			{
+				Data.isOn = GUI.Toggle(Graph.EnabledRect, Data.isOn, "");
+				if (Data.IsChangeToggle(Data.isOn))
+					SetNodeEnabled(this, Data.isOn && Parent.Data.enabled);
+			}
 		}
 
 		/// <summary>
@@ -911,8 +924,11 @@ namespace BT
 		{
 			var window = BtEditorWindow.Window;
 			var curEvent = window.Event;
+			if (curEvent.mousePosition.x >= canvas.width - BtConst.InspectWidth)
+			{
+			}
 			//拖拽
-			if (curEvent.type == EventType.MouseDrag && curEvent.button == 0)
+			else if (curEvent.type == EventType.MouseDrag && curEvent.button == 0)
 			{
 				if (Graph.NodeRect.Contains(curEvent.mousePosition) && mCanDragMove)
 				{
@@ -936,30 +952,29 @@ namespace BT
 				}
 				else if (Graph.UpPointRect.Contains(curEvent.mousePosition))
 				{
+					if (IsRoot) return;
 					curEvent.Use();
-					if (!IsRoot)
+					if (IsHaveParent)
 					{
-						if (IsHaveParent)
-						{
-							Parent.ChildNodeList.Remove(this);
-							Parent.Data.children.Remove(Data);
-							Owner.AddBrokenNode(this);
-							Parent = null;
-						}
-						else
-						{
-							window.CurSelectNode = this;
-							mIsLinkParent = true;
-						}
+						Parent.ChildNodeList.Remove(this);
+						Parent.Data.children.Remove(Data);
+						Owner.AddBrokenNode(this);
+						Parent = null;
+					}
+					else
+					{
+						window.CurSelectNode = this;
+						mIsLinkParent = true;
 					}
 				}
 				else if (Graph.DownPointRect.Contains(curEvent.mousePosition))
 				{
+					if (!IsHaveChild) return;
 					curEvent.Use();
-					if (IsHaveChild)
-						Data.fold = !Data.fold;
+					Data.fold = !Data.fold;
+					SetNodeVisible(this, !Data.fold);
+					Data.visable = true; //自己还是要显示
 				}
-				// else if (curEvent.mousePosition.x >= canvas.width - BtConst.InspectWidth) { }
 				// else window.CurSelectNode = null;
 			}
 			//松开鼠标
@@ -1001,28 +1016,36 @@ namespace BT
 			}
 		}
 
-		private void UpdateNodePosition(BtNode parent, Vector2 delta)
+		private void SetNodeEnabled(BtNode node, bool enabled)
 		{
-			parent.Graph.RealRect.position += delta;
-			if (parent.IsHaveChild)
-			{
-				foreach (var node in parent.ChildNodeList)
-				{
-					UpdateNodePosition(node, delta);
-				}
-			}
+			node.Data.enabled = enabled && node.Data.isOn;
+			if (!node.IsHaveChild) return;
+			foreach (var child in node.ChildNodeList)
+				SetNodeEnabled(child, enabled && node.Data.isOn);
 		}
 
-		private void SetNodePosition(BtNode parent)
+		private void SetNodeVisible(BtNode node, bool visible)
 		{
-			BtHelper.AutoAlignPosition(parent);
-			if (parent.IsHaveChild)
-			{
-				foreach (var node in parent.ChildNodeList)
-				{
-					SetNodePosition(node);
-				}
-			}
+			node.Data.visable = visible;
+			if (!node.IsHaveChild) return;
+			foreach (var child in node.ChildNodeList)
+				SetNodeVisible(child, visible && !node.Data.fold);
+		}
+
+		private void UpdateNodePosition(BtNode node, Vector2 delta)
+		{
+			node.Graph.RealRect.position += delta;
+			if (!node.IsHaveChild) return;
+			foreach (var child in node.ChildNodeList)
+				UpdateNodePosition(child, delta);
+		}
+
+		private void SetNodePosition(BtNode node)
+		{
+			BtHelper.AutoAlignPosition(node);
+			if (!node.IsHaveChild) return;
+			foreach (var child in node.ChildNodeList)
+				SetNodePosition(child);
 		}
 
 		private void Callback(object obj)
@@ -1185,6 +1208,13 @@ namespace BT
 				BtConst.LinePointLength, BtConst.LinePointLength);
 
 		/// <summary>
+		/// 下部连接点
+		/// </summary>
+		public Rect DownPlusRect =>
+			new Rect(NodeRect.center.x - BtConst.LinePlusLength / 2, NodeRect.yMax + 4,
+				BtConst.LinePlusLength, BtConst.LinePlusLength);
+
+		/// <summary>
 		/// 上部连接点
 		/// </summary>
 		public Rect UpPointRect =>
@@ -1217,6 +1247,13 @@ namespace BT
 		/// <summary>
 		/// 符合节点打断类型显示区
 		/// </summary>
-		public Rect AbortTypeRect => new Rect(NodeRect.x, NodeRect.y, BtConst.LinePointLength, BtConst.LinePointLength);
+		public Rect AbortTypeRect =>
+			new Rect(NodeRect.xMin, NodeRect.yMin, BtConst.LinePointLength, BtConst.LinePointLength);
+
+		/// <summary>
+		/// 启用节点显示区
+		/// </summary>
+		public Rect EnabledRect => new Rect(NodeRect.xMax - BtConst.ToggleLength + 2, NodeRect.yMin,
+			BtConst.ToggleLength, BtConst.ToggleLength);
 	}
 }

@@ -185,16 +185,19 @@ namespace BT
 
 		public static BtNodeLua SwitchToLua(BtNodeData data)
 		{
-			var lua = new BtNodeLua {file = data.file, type = data.type, data = data.data, sharedData = data.sharedData};
+			if (!data.enabled) return null;
+			var lua = new BtNodeLua
+				{file = data.file, type = data.type, data = data.data, sharedData = data.sharedData};
 			if (data.children != null && data.children.Count > 0)
 			{
-				lua.children = new List<BtNodeLua>();
 				foreach (var child in data.children)
 				{
-					lua.children.Add(SwitchToLua(child));
+					var childLua = SwitchToLua(child);
+					if (childLua == null) continue;
+					if (lua.children == null) lua.children = new List<BtNodeLua>();
+					lua.children.Add(childLua);
 				}
 			}
-
 			return lua;
 		}
 
@@ -329,8 +332,12 @@ namespace BT
 			if (NodeTypeDict.ContainsKey(key))
 			{
 				var type = NodeTypeDict[key];
-				if (type.StartsWith("composites/SelectorNode") || type.StartsWith("composites/SequenceNode"))
-					return new AbortComposite(node);
+				if (type.StartsWith("composites/SelectorNode"))
+					return new Selector(node);
+				if (type.StartsWith("composites/SequenceNode"))
+					return new Sequence(node);
+				if (type.StartsWith("composites/ParallelNode"))
+					return new Parallel(node);
 				if (type.StartsWith("conditions/IsTriggerNode"))
 					return new IsTriggerNode(node);
 				if (type.StartsWith("decorators/TriggerNode"))

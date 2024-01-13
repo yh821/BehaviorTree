@@ -6,7 +6,9 @@
   "posX": 450.0,
   "posY": 60.0,
   "index": 0,
+  "enabled": true,
   "fold": false,
+  "visable": true,
   "data": {
     "restart": "1"
   },
@@ -20,7 +22,9 @@
       "posX": 450.0,
       "posY": 180.0,
       "index": 1,
+      "enabled": true,
       "fold": false,
+      "visable": true,
       "data": {
         "abortType": "None"
       },
@@ -34,7 +38,9 @@
           "posX": 250.0,
           "posY": 300.0,
           "index": 2,
+          "enabled": true,
           "fold": false,
+          "visable": true,
           "data": {
             "abortType": "Lower"
           },
@@ -48,7 +54,9 @@
               "posX": 150.0,
               "posY": 420.0,
               "index": 3,
+              "enabled": true,
               "fold": false,
+              "visable": true,
               "data": {
                 "ViewRange": "3"
               },
@@ -63,7 +71,9 @@
               "posX": 250.0,
               "posY": 420.0,
               "index": 4,
+              "enabled": true,
               "fold": false,
+              "visable": true,
               "data": {
                 "pos": "TargetPos"
               },
@@ -78,7 +88,9 @@
               "posX": 350.0,
               "posY": 420.0,
               "index": 5,
+              "enabled": true,
               "fold": false,
+              "visable": true,
               "data": {
                 "pos": "TargetPos"
               },
@@ -95,7 +107,9 @@
           "posX": 500.0,
           "posY": 300.0,
           "index": 6,
+          "enabled": true,
           "fold": false,
+          "visable": true,
           "data": {
             "abortType": "None"
           },
@@ -109,7 +123,9 @@
               "posX": 450.0,
               "posY": 420.0,
               "index": 7,
+              "enabled": true,
               "fold": false,
+              "visable": true,
               "data": {
                 "weight": "500"
               },
@@ -124,7 +140,9 @@
               "posX": 550.0,
               "posY": 420.0,
               "index": 8,
+              "enabled": true,
               "fold": false,
+              "visable": true,
               "data": {
                 "min_time": "1",
                 "max_time": "3"
@@ -142,7 +160,9 @@
           "posX": 700.0,
           "posY": 300.0,
           "index": 9,
+          "enabled": true,
           "fold": false,
+          "visable": true,
           "data": {
             "abortType": "None"
           },
@@ -156,7 +176,9 @@
               "posX": 650.0,
               "posY": 420.0,
               "index": 10,
+              "enabled": true,
               "fold": false,
+              "visable": true,
               "data": {
                 "center": "0,0,0",
                 "range": "5"
@@ -172,7 +194,9 @@
               "posX": 750.0,
               "posY": 420.0,
               "index": 11,
+              "enabled": true,
               "fold": false,
+              "visable": true,
               "data": {
                 "pos": "RandomPos"
               },

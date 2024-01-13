@@ -11,7 +11,9 @@ namespace BT
 		Condition,
 		Action,
 		Root,
-		Abort,
+		Selector,
+		Sequence,
+		Parallel,
 		Trigger,
 		IsTrigger,
 	}
@@ -70,6 +72,16 @@ namespace BT
 		/// 连接点半径
 		/// </summary>
 		public const float LinePointLength = 24;
+
+		/// <summary>
+		/// 加号半径
+		/// </summary>
+		public const float LinePlusLength = 16;
+
+		/// <summary>
+		/// 选中框半径
+		/// </summary>
+		public const float ToggleLength = 18;
 
 		/// <summary>
 		/// 图标尺寸
@@ -140,7 +152,11 @@ namespace BT
 		public float posX = 0;
 		public float posY = 0;
 		public int index = -1;
+		public bool isOn = true; //是否勾上启用
+		private bool lastIsOn = true;
+		public bool enabled = true; //是否启用节点
 		public bool fold = false; //是否折叠子节点
+		public bool visable = true; //是否显示
 
 		public Dictionary<string, string> data;
 		public Dictionary<string, string> sharedData; //共享数据,只存放在根节点里
@@ -217,6 +233,13 @@ namespace BT
 		{
 			SetPosition(pos.x, pos.y);
 		}
+
+		public bool IsChangeToggle(bool curIsOn)
+		{
+			if (curIsOn == lastIsOn) return false;
+			lastIsOn = curIsOn;
+			return true;
+		}
 	}
 
 	public abstract class BtNodeType
@@ -243,9 +266,7 @@ namespace BT
 		public abstract int CanAddNodeCount { get; }
 
 		public abstract GUIStyle NormalStyle { get; }
-		public abstract GUIStyle FoldNormalStyle { get; }
 		public abstract GUIStyle SelectStyle { get; }
-		public abstract GUIStyle FoldSelectStyle { get; }
 
 		protected BtNodeType(BtNode node)
 		{
@@ -281,9 +302,7 @@ namespace BT
 		public override int CanAddNodeCount => BtConst.NormalDecoratorCanAddNode;
 
 		public override GUIStyle NormalStyle => BtNodeStyle.DecoratorStyle;
-		public override GUIStyle FoldNormalStyle => BtNodeStyle.FoldDecoratorStyle;
 		public override GUIStyle SelectStyle => BtNodeStyle.SelectDecoratorStyle;
-		public override GUIStyle FoldSelectStyle => BtNodeStyle.FoldSelectDecoratorStyle;
 
 		public override ErrorType IsValid => BelongNode.ChildNodeList.Count == 1 ? ErrorType.None : ErrorType.Error;
 
@@ -299,9 +318,7 @@ namespace BT
 		public override int CanAddNodeCount => BtConst.NormalCompositeCanAddNode;
 
 		public override GUIStyle NormalStyle => BtNodeStyle.CompositeStyle;
-		public override GUIStyle FoldNormalStyle => BtNodeStyle.FoldCompositeStyle;
 		public override GUIStyle SelectStyle => BtNodeStyle.SelectCompositeStyle;
-		public override GUIStyle FoldSelectStyle => BtNodeStyle.FoldSelectCompositeStyle;
 
 		public override ErrorType IsValid => BelongNode.IsHaveChild ? ErrorType.None : ErrorType.Error;
 
@@ -317,9 +334,7 @@ namespace BT
 		public override int CanAddNodeCount => BtConst.NormalTaskCanAddNode;
 
 		public override GUIStyle NormalStyle => BtNodeStyle.ConditionStyle;
-		public override GUIStyle FoldNormalStyle => BtNodeStyle.FoldConditionStyle;
 		public override GUIStyle SelectStyle => BtNodeStyle.SelectConditionStyle;
-		public override GUIStyle FoldSelectStyle => BtNodeStyle.FoldSelectConditionStyle;
 
 		public override ErrorType IsValid => ErrorType.None;
 
@@ -335,9 +350,7 @@ namespace BT
 		public override int CanAddNodeCount => BtConst.NormalTaskCanAddNode;
 
 		public override GUIStyle NormalStyle => BtNodeStyle.ActionStyle;
-		public override GUIStyle FoldNormalStyle => BtNodeStyle.FoldTaskStyle;
 		public override GUIStyle SelectStyle => BtNodeStyle.SelectTaskStyle;
-		public override GUIStyle FoldSelectStyle => BtNodeStyle.FoldSelectTaskStyle;
 
 		public override ErrorType IsValid => ErrorType.None;
 
@@ -348,12 +361,45 @@ namespace BT
 
 	#region CustomType
 
-	public class AbortComposite : Composite
+	public class Selector : Composite
 	{
-		public override TaskType Type => TaskType.Abort;
+		public override TaskType Type => TaskType.Selector;
 
-		public AbortComposite(BtNode node) : base(node)
+		public Selector(BtNode node) : base(node)
 		{
+		}
+
+		public override Texture GetIcon()
+		{
+			return BtNodeStyle.SelectorIcon;
+		}
+	}
+
+	public class Sequence : Composite
+	{
+		public override TaskType Type => TaskType.Sequence;
+
+		public Sequence(BtNode node) : base(node)
+		{
+		}
+
+		public override Texture GetIcon()
+		{
+			return BtNodeStyle.SequenceIcon;
+		}
+	}
+
+	public class Parallel : Composite
+	{
+		public override TaskType Type => TaskType.Parallel;
+
+		public Parallel(BtNode node) : base(node)
+		{
+		}
+
+		public override Texture GetIcon()
+		{
+			return BtNodeStyle.ParallelIcon;
 		}
 	}
 
@@ -383,24 +429,16 @@ namespace BT
 		public static GUIStyle SelectRootStyle => "flow node 0 on";
 
 		public static GUIStyle DecoratorStyle => "flow node 2";
-		public static GUIStyle FoldDecoratorStyle => "flow node hex 2";
 		public static GUIStyle SelectDecoratorStyle => "flow node 2 on";
-		public static GUIStyle FoldSelectDecoratorStyle => "flow node hex 2 on";
 
 		public static GUIStyle CompositeStyle => "flow node 1";
-		public static GUIStyle FoldCompositeStyle => "flow node hex 1";
 		public static GUIStyle SelectCompositeStyle => "flow node 1 on";
-		public static GUIStyle FoldSelectCompositeStyle => "flow node hex 1 on";
 
 		public static GUIStyle ActionStyle => "flow node 3";
-		public static GUIStyle FoldTaskStyle => "flow node hex 3";
 		public static GUIStyle SelectTaskStyle => "flow node 3 on";
-		public static GUIStyle FoldSelectTaskStyle => "flow node hex 3 on";
 
 		public static GUIStyle ConditionStyle => "flow node 2"; //5";
-		public static GUIStyle FoldConditionStyle => "flow node hex 2"; //5";
 		public static GUIStyle SelectConditionStyle => "flow node 2 on"; //5
-		public static GUIStyle FoldSelectConditionStyle => "flow node hex 2 on"; //5
 		public static GUIStyle IndexStyle => "AssetLabel";
 
 
@@ -412,6 +450,9 @@ namespace BT
 
 		private static GUIContent _errorPoint;
 		public static GUIContent ErrorPoint => _errorPoint ??= EditorGUIUtility.IconContent("sv_icon_dot6_pix16_gizmo");
+
+		private static GUIContent _foldoutPlus;
+		public static GUIContent FoldoutPlus => _foldoutPlus ??= EditorGUIUtility.IconContent("P4_AddedLocal");
 
 		private static Texture _rootIcon;
 
@@ -426,6 +467,54 @@ namespace BT
 					_rootIcon = AssetDatabase.LoadAssetAtPath<Texture>(path);
 				}
 				return _rootIcon;
+			}
+		}
+
+		private static Texture _selectorIcon;
+
+		public static Texture SelectorIcon
+		{
+			get
+			{
+				if (_selectorIcon == null)
+				{
+					var path = BtHelper.ToolPath + "/GUI/selector.png";
+					path = FileUtil.GetProjectRelativePath(path);
+					_selectorIcon = AssetDatabase.LoadAssetAtPath<Texture>(path);
+				}
+				return _selectorIcon;
+			}
+		}
+
+		private static Texture _sequenceIcon;
+
+		public static Texture SequenceIcon
+		{
+			get
+			{
+				if (_sequenceIcon == null)
+				{
+					var path = BtHelper.ToolPath + "/GUI/sequence.png";
+					path = FileUtil.GetProjectRelativePath(path);
+					_sequenceIcon = AssetDatabase.LoadAssetAtPath<Texture>(path);
+				}
+				return _sequenceIcon;
+			}
+		}
+
+		private static Texture _parallelIcon;
+
+		public static Texture ParallelIcon
+		{
+			get
+			{
+				if (_parallelIcon == null)
+				{
+					var path = BtHelper.ToolPath + "/GUI/parallel.png";
+					path = FileUtil.GetProjectRelativePath(path);
+					_parallelIcon = AssetDatabase.LoadAssetAtPath<Texture>(path);
+				}
+				return _parallelIcon;
 			}
 		}
 
@@ -460,7 +549,6 @@ namespace BT
 				return _abortLowerLogo;
 			}
 		}
-
 
 		private static Texture _abortBothLogo;
 
