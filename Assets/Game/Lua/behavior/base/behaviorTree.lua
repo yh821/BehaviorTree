@@ -78,11 +78,12 @@ __RecycleNode = function(node)
         end
     end
     --回收节点
-    BehaviorManager.Recycle(node)
+    BehaviorManager.RecycleNode(node)
 end
 
 function BehaviorTree:Clear()
     __RecycleNode(self.child)
+    self.blackBoard = nil
 end
 
 ---@return table

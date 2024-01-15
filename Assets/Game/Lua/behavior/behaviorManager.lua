@@ -8,27 +8,53 @@ require("behavior/BehaviorConfig")
 ---@class BehaviorManager
 BehaviorManager = {}
 
-local _behaviorNodeDict = {}
+local _node_file_map = {}
 ---@type BehaviorTree[]
-local _behaviorTreeDict = {}
+local _behavior_tree_map = {}
 local _globalVariables = {}
 
-function BehaviorManager:SwitchTick()
-    self._is_tick = not self._is_tick
+function BehaviorManager:SwitchTick(thinking)
+    if self._is_tick == thinking then
+        return
+    end
+    if thinking == nil then
+        self._is_tick = not self._is_tick
+    else
+        self._is_tick = thinking
+    end
     if self._is_tick then
         print_log("[behaviorManager] 开始心跳")
     else
         print_log("[behaviorManager] 停止心跳")
-        self:CleanTree()
     end
 end
 
-function BehaviorManager:CleanTree()
-    for _, bt in pairs(_behaviorTreeDict) do
-        --TODO 考虑回收行为树
+function BehaviorManager:StopTick()
+    self:SwitchTick(false)
+    self:DestroyAll()
+end
+
+function BehaviorManager:DestroyAll()
+    for _, bt in pairs(_behavior_tree_map) do
         bt:DeleteMe()
     end
-    _behaviorTreeDict = {}
+    _behavior_tree_map = {}
+
+    self:CleanGlobalVar()
+
+    for _, pool in pairs(BehaviorManager._tree_pool_map) do
+        for _, tree in ipairs(pool) do
+            tree:DeleteMe()
+        end
+    end
+    BehaviorManager._tree_pool_map = {}
+
+    for _, pool in pairs(BehaviorManager._node_pool_map) do
+        for _, node in ipairs(pool) do
+            node:DeleteMe()
+        end
+    end
+    BehaviorManager._node_pool_map = {}
 end
 
 function BehaviorManager:CleanGlobalVar()
@@ -36,15 +62,15 @@ function BehaviorManager:CleanGlobalVar()
 end
 
 ---简单的池子
-BehaviorManager._node_pool = {}
+BehaviorManager._node_pool_map = {}
 ---@param node TaskNode
-function BehaviorManager.Recycle(node)
+function BehaviorManager.RecycleNode(node)
     node:Clear()
     local class = node.file
-    local class_pool = BehaviorManager._node_pool[class]
+    local class_pool = BehaviorManager._node_pool_map[class]
     if class_pool == nil then
         class_pool = {}
-        BehaviorManager._node_pool[class] = class_pool
+        BehaviorManager._node_pool_map[class] = class_pool
     end
     --TODO 考虑池子上限
     table.insert(class_pool, node)
@@ -55,7 +81,7 @@ end
 ---@param tree BehaviorTree
 ---@return TaskNode
 function BehaviorManager.CreateNode(file, data, parent, tree)
-    local class_pool = BehaviorManager._node_pool[file]
+    local class_pool = BehaviorManager._node_pool_map[file]
     if class_pool == nil or #class_pool == 0 then
         ---@type TaskNode
         local class = _G[file]
@@ -70,11 +96,26 @@ function BehaviorManager.CreateNode(file, data, parent, tree)
     end
 end
 
+---简单的池子
+BehaviorManager._tree_pool_map = {}
+---@param tree BehaviorTree
+function BehaviorManager.RecycleTree(tree)
+    tree:Clear()
+    local class = tree.file
+    local class_pool = BehaviorManager._tree_pool_map[class]
+    if class_pool == nil then
+        class_pool = {}
+        BehaviorManager._tree_pool_map[class] = class_pool
+    end
+    --TODO 考虑池子上限
+    table.insert(class_pool, tree)
+end
+
 ---@type fun(json:table, parent:TaskNode, tree:BehaviorTree)
 local __GenBehaviorTree
 __GenBehaviorTree = function(json, parent, tree)
-    if _behaviorNodeDict[json.file] == nil then
-        _behaviorNodeDict[json.file] = true
+    if _node_file_map[json.file] == nil then
+        _node_file_map[json.file] = true
         require("behavior/nodes/" .. json.type)
     end
     local node = BehaviorManager.CreateNode(json.file, json.data, parent, tree)
@@ -88,31 +129,44 @@ __GenBehaviorTree = function(json, parent, tree)
     end
 end
 
+local _json_file_map = {}
 ---@param file string
-function BehaviorManager:__LoadBehaviorTree(file)
-    local json = require(string.format("behavior/config/%s", file))
-    if json then
-        local bt = BehaviorTree.New(json.data, file)
-        local root = json.children[1]
-        __GenBehaviorTree(root, bt, bt)
-        if json.sharedData then
-            for k, v in pairs(json.sharedData) do
-                bt:SetSharedVar(k, v)
-            end
+function BehaviorManager:CreateTree(file)
+    local json = _json_file_map[file]
+    if not json then
+        json = require(string.format("behavior/config/%s", file))
+        if not json then
+            return
         end
-        return bt
+        _json_file_map[file] = json
     end
+    ---@type BehaviorTree
+    local bt
+    local class_pool = BehaviorManager._tree_pool_map[file]
+    if class_pool == nil or #class_pool == 0 then
+        bt = BehaviorTree.New(json.data, file)
+    else
+        bt = table.remove(class_pool)
+        bt:Awake()
+    end
+    __GenBehaviorTree(json.children[1], bt, bt)
+    if json.sharedData then
+        for k, v in pairs(json.sharedData) do
+            bt:SetSharedVar(k, v)
+        end
+    end
+    return bt
 end
 
 ---@param file string
 ---@return BehaviorTree
 function BehaviorManager:BindBehaviorTree(gameObject, file, shared_data)
-    local bt = _behaviorTreeDict[gameObject]
+    local bt = _behavior_tree_map[gameObject]
     if bt then
         print_error("实体已经绑定了行为树:", bt.file)
         return
     end
-    bt = self:__LoadBehaviorTree(file)
+    bt = self:CreateTree(file)
     if bt == nil then
         print_error("找不到行为树:", file)
         return
@@ -123,29 +177,30 @@ function BehaviorManager:BindBehaviorTree(gameObject, file, shared_data)
         end
     end
     bt.gameObject = gameObject
-    _behaviorTreeDict[gameObject] = bt
+    _behavior_tree_map[gameObject] = bt
     return bt
 end
 
 function BehaviorManager:UnBindBehaviorTree(gameObject)
-    local bt = _behaviorTreeDict[gameObject]
+    local bt = _behavior_tree_map[gameObject]
     if not bt then
         return
     end
     bt.gameObject = nil
-    _behaviorTreeDict[gameObject] = nil
+    _behavior_tree_map[gameObject] = nil
+    BehaviorManager.RecycleTree(bt)
     print_log("已解绑行为树:", bt.file)
 end
 
 function BehaviorManager:GetBehaviorTree(gameObject)
-    return _behaviorTreeDict[gameObject]
+    return _behavior_tree_map[gameObject]
 end
 
 function BehaviorManager:Update(delta_time)
     if not self._is_tick then
         return
     end
-    for _, bt in pairs(_behaviorTreeDict) do
+    for _, bt in pairs(_behavior_tree_map) do
         bt:Update(delta_time)
     end
 end
