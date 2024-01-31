@@ -138,16 +138,11 @@ namespace BT
 		{
 			node.Data.file = node.NodeName;
 			node.Data.SetPosition(node.Graph.RealRect.position);
-			if (node.IsHaveChild)
-			{
-				foreach (var child in node.ChildNodeList)
-				{
-					WalkNodeData(child);
-				}
-
-				node.ChildNodeList.Sort(SortNodeList);
-				node.Data.children.Sort(SortNodeList);
-			}
+			if (!node.IsHaveChild) return;
+			foreach (var child in node.ChildNodeList)
+				WalkNodeData(child);
+			node.ChildNodeList.Sort(SortNodeList);
+			node.Data.children.Sort(SortNodeList);
 		}
 
 		private static int _nodeIndex;
@@ -155,9 +150,9 @@ namespace BT
 		public static void WalkNodeIndex(BtNode node)
 		{
 			node.Data.index = _nodeIndex++;
-			if (node.IsHaveChild)
-				foreach (var child in node.ChildNodeList)
-					WalkNodeIndex(child);
+			if (!node.IsHaveChild) return;
+			foreach (var child in node.ChildNodeList)
+				WalkNodeIndex(child);
 		}
 
 		private static int SortNodeList(BtNode a, BtNode b)
@@ -172,14 +167,10 @@ namespace BT
 
 		private static int SortNodeList(float ax, float ay, float bx, float by)
 		{
-			if (ax > bx)
-				return 1;
-			if (ax < bx)
-				return -1;
-			if (ay > by)
-				return 1;
-			if (ay < by)
-				return -1;
+			if (ax > bx) return 1;
+			if (ax < bx) return -1;
+			if (ay > by) return 1;
+			if (ay < by) return -1;
 			return 0;
 		}
 
@@ -201,13 +192,13 @@ namespace BT
 			return lua;
 		}
 
-		public static BehaviourTree LoadBehaviorTree(string file)
+		public static BehaviourTree LoadBehaviorTree(EditorWindow win, string file)
 		{
 			if (!File.Exists(file))
 				return null;
 			var content = File.ReadAllText(file);
 			var data = JsonConvert.DeserializeObject<BtNodeData>(content);
-			var tree = new BehaviourTree(Path.GetFileNameWithoutExtension(file), data);
+			var tree = new BehaviourTree(win, Path.GetFileNameWithoutExtension(file), data);
 			WalkJsonData(tree, tree.Root);
 			return tree;
 		}
@@ -234,13 +225,11 @@ namespace BT
 		public static void WalkJsonData(BehaviourTree owner, BtNode parent)
 		{
 			var childrenData = parent.Data.children;
-			if (childrenData != null && childrenData.Count > 0)
+			if (childrenData == null || childrenData.Count <= 0) return;
+			foreach (var data in childrenData)
 			{
-				foreach (var data in childrenData)
-				{
-					var child = AddChildNode(owner, parent, data);
-					WalkJsonData(owner, child);
-				}
+				var child = AddChildNode(owner, parent, data);
+				WalkJsonData(owner, child);
 			}
 		}
 
@@ -299,11 +288,11 @@ namespace BT
 
 		public static void AutoAlignPosition(BtNode node)
 		{
-			var width = (BtConst.DefaultWidth + BtConst.DefaultSpacingX) / 2;
+			const int width = (BtConst.DefaultWidth + BtConst.DefaultSpacingX) / 2;
 			var multiW = Mathf.RoundToInt(node.Graph.RealRect.x / width);
 			float x = multiW * width;
 
-			var height = (BtConst.DefaultHeight + BtConst.DefaultSpacingY) / 2;
+			const int height = (BtConst.DefaultHeight + BtConst.DefaultSpacingY) / 2;
 			var multiH = Mathf.RoundToInt(node.Graph.RealRect.y / height);
 			float y = multiH * height;
 
@@ -392,18 +381,15 @@ namespace BT
 			{
 				foreach (var kv in option)
 				{
-					if (kv.Key == "name")
-						data.name = kv.Value;
-					else
-						data.AddData(kv.Key, kv.Value);
+					if (kv.Key == "name") data.name = kv.Value;
+					else data.AddData(kv.Key, kv.Value);
 				}
 			}
 		}
 
 		public static bool CheckKey(string key)
 		{
-			if (string.IsNullOrEmpty(key))
-				return false;
+			if (string.IsNullOrEmpty(key)) return false;
 			if (key == "name" || key == "file" || key == "type"
 			    || key == "data" || key == "desc" || key == "children")
 				return false; //保留字段
@@ -428,10 +414,7 @@ namespace BT
 			foreach (var dir in dirs)
 			{
 				var subNames = GetAllFiles(dir.FullName, extension);
-				foreach (var subName in subNames)
-				{
-					names.Add(subName);
-				}
+				names.AddRange(subNames);
 			}
 
 			return names;

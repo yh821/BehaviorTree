@@ -49,3 +49,7 @@ function MoveToPositionNode:GetDrawObj()
         return scene_obj:GetDrawObj()
     end
 end
+
+function MoveToPositionNode:Clear()
+    self.draw_obj = nil
+end

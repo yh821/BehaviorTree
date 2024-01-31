@@ -27,6 +27,10 @@ function SpeakNode:Abort()
     self:shutUp()
 end
 
+function SpeakNode:Clear()
+    self:shutUp()
+end
+
 function SpeakNode:shutUp()
     if self.hudId then
         hudControl:removeHUD(self.hudId)

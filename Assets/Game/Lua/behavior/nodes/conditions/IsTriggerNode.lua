@@ -42,3 +42,10 @@ function IsTriggerNode:GetTriggerValue()
     end
     return self.trigger_value
 end
+
+function TriggerNode:Clear()
+    self.type = nil
+    self.value = nil
+    self.trigger_type = nil
+    self.trigger_value = nil
+end

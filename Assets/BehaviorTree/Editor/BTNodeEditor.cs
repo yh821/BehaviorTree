@@ -34,7 +34,20 @@ namespace BT
 		/// <summary>
 		/// 当前移动坐标 鼠标拖拽背景偏移
 		/// </summary>
-		public Vector2 Position { get; set; } = Vector2.zero;
+		public static Vector2 Position { get; set; } = Vector2.zero;
+
+		private static float mScale = 1f;
+
+		public static float Scale
+		{
+			get => mScale;
+			set
+			{
+				if (value > 1f) mScale = 1f;
+				else if (value < 0.5f) mScale = 0.5f;
+				else mScale = value;
+			}
+		}
 
 		public Event Event
 		{
@@ -89,7 +102,7 @@ namespace BT
 			MINUS_ICON = EditorGUIUtility.IconContent("Toolbar Minus");
 			defaultLabelWidth = EditorGUIUtility.labelWidth;
 
-			if (CurBehaviourTree == null) CurBehaviourTree = new BehaviourTree();
+			if (CurBehaviourTree == null) CurBehaviourTree = new BehaviourTree(this);
 			if (mBtGrid == null) mBtGrid = new BtGrid();
 			BtHelper.LoadNodeFile();
 			LoadBehaviorTree();
@@ -109,11 +122,11 @@ namespace BT
 					mLastSelectJson = mCurSelectJson;
 					var fileName = mAllShowJson[mCurSelectJson];
 					var file = Path.Combine(BtHelper.JsonPath, $"{fileName}.json");
-					CurBehaviourTree = BtHelper.LoadBehaviorTree(file);
+					CurBehaviourTree = BtHelper.LoadBehaviorTree(this, file);
 					if (CurBehaviourTree == null)
 					{
 						Debug.LogErrorFormat("读取行为树失败, {0}", file);
-						CurBehaviourTree = new BehaviourTree(DEFAULE_BT_NAME);
+						CurBehaviourTree = new BehaviourTree(this, DEFAULE_BT_NAME);
 					}
 				}
 
@@ -157,7 +170,7 @@ namespace BT
 					case KeyCode.V:
 						if (CopyNode == null) break;
 						var tree = Window.CurBehaviourTree;
-						var pos = e.mousePosition - Window.Position;
+						var pos = e.mousePosition - Position;
 						var clone = BtHelper.PasteChild(tree, null, pos);
 						Window.CurSelectNode = clone;
 						tree.AddBrokenNode(clone);
@@ -294,7 +307,7 @@ namespace BT
 			EditorGUILayout.EndVertical();
 
 			if (GUILayout.Button("新建行为树"))
-				CurBehaviourTree = new BehaviourTree(DEFAULE_BT_NAME);
+				CurBehaviourTree = new BehaviourTree(this, DEFAULE_BT_NAME);
 			if (GUILayout.Button("加载行为树"))
 				LoadBehaviorTree();
 		}
@@ -359,10 +372,7 @@ namespace BT
 					EditorGUILayout.LabelField("节点说明", GUILayout.MaxWidth(50));
 					data.desc = EditorGUILayout.TextArea(data.desc, GUILayout.MaxWidth(BtConst.InspectWidth));
 				}
-				else
-				{
-					EditorGUILayout.HelpBox(data.desc, MessageType.Info);
-				}
+				else EditorGUILayout.HelpBox(data.desc, MessageType.Info);
 
 				if (GUILayout.Button(mIsSettingNode ? "ok" : "set", GUILayout.MaxWidth(30)))
 					mIsSettingNode = !mIsSettingNode;
@@ -556,14 +566,9 @@ namespace BT
 			EditorGUILayout.BeginHorizontal();
 			{
 				if (GUILayout.Button("JsonBT目录"))
-				{
 					System.Diagnostics.Process.Start(BtHelper.JsonPath);
-				}
-
 				if (GUILayout.Button("LuaBT目录"))
-				{
 					System.Diagnostics.Process.Start(BtHelper.BehaviorPath);
-				}
 			}
 			EditorGUILayout.EndHorizontal();
 
@@ -608,32 +613,28 @@ namespace BT
 			{
 				GUILayout.Space(SPACE_VALUE);
 				EditorGUILayout.BeginVertical("Box");
+				EditorGUILayout.LabelField("修改配置: " + mSelectNode);
+
+				EditorGUIUtility.labelWidth = 25;
+				foreach (var kv in mSelectDict)
+					DrawItemOptionInspector(kv);
+
+				EditorGUILayout.BeginHorizontal();
 				{
-					EditorGUILayout.LabelField("修改配置: " + mSelectNode);
-
-					EditorGUIUtility.labelWidth = 25;
-					foreach (var kv in mSelectDict)
+					mDefKey = EditorGUILayout.TextField(KEY_NAME, mDefKey);
+					mDefValue = EditorGUILayout.TextField(VAL_NAME, mDefValue);
+					if (GUILayout.Button(PLUS_ICON, GUILayout.Width(BTN_ICON_WIDTH)))
 					{
-						DrawItemOptionInspector(kv);
-					}
-
-					EditorGUILayout.BeginHorizontal();
-					{
-						mDefKey = EditorGUILayout.TextField(KEY_NAME, mDefKey);
-						mDefValue = EditorGUILayout.TextField(VAL_NAME, mDefValue);
-						if (GUILayout.Button(PLUS_ICON, GUILayout.Width(BTN_ICON_WIDTH)))
+						if (BtHelper.CheckKey(mDefKey))
 						{
-							if (BtHelper.CheckKey(mDefKey))
-							{
-								mSelectDict.Add(mDefKey, mDefValue);
-								mDefKey = "";
-								mDefValue = "";
-								GUIUtility.keyboardControl = 0;
-							}
+							mSelectDict.Add(mDefKey, mDefValue);
+							mDefKey = "";
+							mDefValue = "";
+							GUIUtility.keyboardControl = 0;
 						}
 					}
-					EditorGUILayout.EndHorizontal();
 				}
+				EditorGUILayout.EndHorizontal();
 				EditorGUILayout.EndVertical();
 			}
 
@@ -649,16 +650,14 @@ namespace BT
 				EditorGUILayout.EndScrollView();
 
 				EditorGUILayout.BeginHorizontal();
+				mAddNode = EditorGUILayout.TextField("新增节点", mAddNode);
+				if (GUILayout.Button(PLUS_ICON, GUILayout.Width(BTN_ICON_WIDTH)))
 				{
-					mAddNode = EditorGUILayout.TextField("新增节点", mAddNode);
-					if (GUILayout.Button(PLUS_ICON, GUILayout.Width(BTN_ICON_WIDTH)))
+					if (!string.IsNullOrEmpty(mAddNode))
 					{
-						if (!string.IsNullOrEmpty(mAddNode))
-						{
-							var data = new Dictionary<string, string> {{"name", ""}};
-							mOptions.Add(mAddNode, data);
-							mAddNode = null;
-						}
+						var data = new Dictionary<string, string> {{"name", ""}};
+						mOptions.Add(mAddNode, data);
+						mAddNode = null;
 					}
 				}
 				EditorGUILayout.EndHorizontal();
@@ -668,14 +667,12 @@ namespace BT
 		private void DrawItemOptionInspector(KeyValuePair<string, string> kv)
 		{
 			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField(KEY_NAME, kv.Key);
+			mDefChangeDict[kv.Key] = EditorGUILayout.TextField(VAL_NAME, kv.Value);
+			if (GUILayout.Button(MINUS_ICON, GUILayout.Width(BTN_ICON_WIDTH)))
 			{
-				EditorGUILayout.LabelField(KEY_NAME, kv.Key);
-				mDefChangeDict[kv.Key] = EditorGUILayout.TextField(VAL_NAME, kv.Value);
-				if (GUILayout.Button(MINUS_ICON, GUILayout.Width(BTN_ICON_WIDTH)))
-				{
-					mDefDelKey = kv.Key;
-					GUIUtility.keyboardControl = 0;
-				}
+				mDefDelKey = kv.Key;
+				GUIUtility.keyboardControl = 0;
 			}
 			EditorGUILayout.EndHorizontal();
 		}
@@ -683,18 +680,16 @@ namespace BT
 		private void DrawOptionInspector(string key)
 		{
 			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField(key);
+			if (GUILayout.Button("修改配置", GUILayout.MaxWidth(60)))
 			{
-				EditorGUILayout.LabelField(key);
-				if (GUILayout.Button("修改配置", GUILayout.MaxWidth(60)))
-				{
-					mDefChangeDict.Clear();
-					mSelectNode = key;
-					mSelectDict = mOptions[key];
-				}
-
-				if (GUILayout.Button(MINUS_ICON, GUILayout.Width(BTN_ICON_WIDTH)))
-					mDelNode = key;
+				mDefChangeDict.Clear();
+				mSelectNode = key;
+				mSelectDict = mOptions[key];
 			}
+
+			if (GUILayout.Button(MINUS_ICON, GUILayout.Width(BTN_ICON_WIDTH)))
+				mDelNode = key;
 			EditorGUILayout.EndHorizontal();
 		}
 
@@ -703,13 +698,13 @@ namespace BT
 
 	public class BtGrid
 	{
-		private readonly Texture _background;
+		private readonly Texture background;
 
 		public BtGrid()
 		{
 			var path = BtHelper.ToolPath + "/GUI/background.png";
 			path = FileUtil.GetProjectRelativePath(path);
-			_background = AssetDatabase.LoadAssetAtPath<Texture>(path);
+			background = AssetDatabase.LoadAssetAtPath<Texture>(path);
 		}
 
 		/// <summary>
@@ -731,19 +726,20 @@ namespace BT
 			if (currentEvent.type == EventType.MouseDrag && currentEvent.button == 1)
 			{
 				currentEvent.Use();
-				BtEditorWindow.Window.Position += currentEvent.delta;
+				BtEditorWindow.Position += currentEvent.delta / BtEditorWindow.Scale;
 			}
 		}
 
 		private void DrawBackground(Vector2 windowSize)
 		{
-			var position = BtEditorWindow.Window.Position;
+			var scale = BtEditorWindow.Scale;
+			var position = BtEditorWindow.Position;
 			var rect = new Rect(0, 0, windowSize.x, windowSize.y);
-			var texCoords = new Rect(-position.x / _background.width,
-				(1.0f - windowSize.y / _background.height) + position.y / _background.height,
-				windowSize.x / _background.width,
-				windowSize.y / _background.height);
-			GUI.DrawTextureWithTexCoords(rect, _background, texCoords);
+			var texCoords = new Rect(-position.x / background.width / scale,
+				1.0f - windowSize.y / background.height / scale + position.y / background.height / scale,
+				windowSize.x / background.width / scale,
+				windowSize.y / background.height / scale);
+			GUI.DrawTextureWithTexCoords(rect, background, texCoords);
 		}
 	}
 
@@ -828,8 +824,9 @@ namespace BT
 				var startPos = Graph.UpPointRect.center;
 				var endPos = BtEditorWindow.Window.Event.mousePosition;
 				var center = startPos.x + (endPos.x - startPos.x) / 2;
-				Handles.DrawBezier(startPos, endPos, new Vector3(center, startPos.y),
-					new Vector3(center, endPos.y), BtConst.LineColor, Texture2D.whiteTexture, BtConst.BezierSize);
+				Handles.DrawBezier(startPos, endPos,
+					new Vector3(center, startPos.y), new Vector3(center, endPos.y),
+					BtConst.LineColor, Texture2D.whiteTexture, BtConst.BezierSize * BtEditorWindow.Scale);
 				//Handles.DrawLine (startPos, endPos);
 			}
 
@@ -846,15 +843,12 @@ namespace BT
 			GUIStyle style;
 			if (Data.enabled) style = IsSelected ? NodeType.SelectStyle : NodeType.NormalStyle;
 			else style = IsSelected ? BtNodeStyle.SelectRootStyle : BtNodeStyle.RootStyle;
+			style.fontSize = Mathf.RoundToInt(style.fontSize * BtEditorWindow.Scale);
 			var showLabel = Data.name;
-			if (!BtEditorWindow.IsDebug)
-				showLabel = $"\n{showLabel}";
+			if (!BtEditorWindow.IsDebug) showLabel = $"\n{showLabel}";
 			else
 			{
-				if (Data.data == null)
-				{
-					showLabel = $"\n{showLabel}";
-				}
+				if (Data.data == null) showLabel = $"\n{showLabel}";
 				else if (Data.data.Count == 1)
 				{
 					var first = Data.data.First();
@@ -865,18 +859,15 @@ namespace BT
 					var i = 0;
 					foreach (var data in Data.data)
 					{
-						if (i < 2)
-							showLabel = $"{showLabel}\n{data.Key}:{data.Value}";
-						else
-							break;
+						if (i < 2) showLabel = $"{showLabel}\n{data.Key}:{data.Value}";
+						else break;
 						i++;
 					}
 				}
 			}
 
 			var icon = NodeType.GetIcon();
-			if (icon == null)
-				GUI.Label(Graph.NodeRect, showLabel, style);
+			if (icon == null) GUI.Label(Graph.NodeRect, showLabel, style);
 			else
 			{
 				GUI.Label(Graph.NodeRect, "", style);
@@ -924,9 +915,7 @@ namespace BT
 		{
 			var window = BtEditorWindow.Window;
 			var curEvent = window.Event;
-			if (curEvent.mousePosition.x >= canvas.width - BtConst.InspectWidth)
-			{
-			}
+			if (curEvent.mousePosition.x >= canvas.width - BtConst.InspectWidth) { }
 			//拖拽
 			else if (curEvent.type == EventType.MouseDrag && curEvent.button == 0)
 			{
@@ -936,7 +925,10 @@ namespace BT
 					mIsDragging = true;
 					window.CurSelectNode = this;
 					GUIUtility.keyboardControl = 0;
-					var delta = BtEditorWindow.IsLockAxisY ? new Vector2(curEvent.delta.x, 0) : curEvent.delta;
+					var scale = BtEditorWindow.Scale;
+					var delta = BtEditorWindow.IsLockAxisY
+						? new Vector2(curEvent.delta.x / scale, 0)
+						: curEvent.delta * scale;
 					UpdateNodePosition(this, delta);
 				}
 			}
@@ -985,9 +977,7 @@ namespace BT
 					curEvent.Use();
 					mIsDragging = false;
 					if (BtEditorWindow.IsAutoAlign)
-					{
 						SetNodePosition(this);
-					}
 				}
 
 				if (mIsLinkParent)
@@ -1005,6 +995,15 @@ namespace BT
 				}
 
 				mCanDragMove = false;
+			}
+			else if (curEvent.type == EventType.ScrollWheel)
+			{
+				var y = curEvent.delta.y;
+				if (y != 0)
+				{
+					BtEditorWindow.Scale = BtEditorWindow.Scale += y / 100f;
+					curEvent.Use();
+				}
 			}
 			else if (curEvent.type == EventType.ContextClick)
 			{
@@ -1088,14 +1087,18 @@ namespace BT
 
 		public BtNode Root { get; }
 
-		public BehaviourTree()
+		private EditorWindow WinHandle { get; }
+
+		public BehaviourTree(EditorWindow win)
 		{
+			WinHandle = win;
 			NodeDict = new Dictionary<string, BtNode>();
 			NodePosDict = new Dictionary<string, int>();
 		}
 
-		public BehaviourTree(string name, BtNodeData data = null)
+		public BehaviourTree(EditorWindow win, string name, BtNodeData data = null)
 		{
+			WinHandle = win;
 			Name = name;
 			NodeDict = new Dictionary<string, BtNode>();
 			NodePosDict = new Dictionary<string, int>();
@@ -1130,6 +1133,7 @@ namespace BT
 				NodePosDict[key] = count + 1;
 			else
 				NodePosDict.Add(key, 1);
+			// WinHandle.Repaint();
 		}
 
 		public void RemoveNode(BtNode node)
@@ -1137,16 +1141,19 @@ namespace BT
 			NodeDict.Remove(node.Guid);
 			BrokenNodeDict.Remove(node.Guid);
 			NodePosDict.Remove(node.Data.GetPosition().ToString());
+			// WinHandle.Repaint();
 		}
 
 		public void AddBrokenNode(BtNode node)
 		{
 			BrokenNodeDict.Add(node.Guid, node);
+			WinHandle.Repaint();
 		}
 
 		public void RemoveBrokenNode(BtNode node)
 		{
 			BrokenNodeDict.Remove(node.Guid);
+			// WinHandle.Repaint();
 		}
 
 		public Vector2 GenNodePos(Vector2 pos)
@@ -1180,7 +1187,9 @@ namespace BT
 			get
 			{
 				var ret = RealRect;
-				ret.position += BtEditorWindow.Window.Position;
+				ret.position += BtEditorWindow.Position;
+				ret.position *= BtEditorWindow.Scale;
+				ret.size *= BtEditorWindow.Scale;
 				return ret;
 			}
 		}
@@ -1193,7 +1202,7 @@ namespace BT
 			get
 			{
 				var rect = NodeRect;
-				var w = BtConst.IconSize;
+				var w = BtConst.IconSize * BtEditorWindow.Scale;
 				var x = rect.x + (rect.width - w) / 2;
 				var y = rect.y + (rect.height - w) / 2;
 				return new Rect(x, y, w, w);
@@ -1203,57 +1212,100 @@ namespace BT
 		/// <summary>
 		/// 下部连接点
 		/// </summary>
-		public Rect DownPointRect =>
-			new Rect(NodeRect.center.x - BtConst.LinePointLength / 2, NodeRect.yMax,
-				BtConst.LinePointLength, BtConst.LinePointLength);
+		public Rect DownPointRect
+		{
+			get
+			{
+				var w = BtConst.LinePointLength * BtEditorWindow.Scale;
+				return new Rect(NodeRect.center.x - w / 2, NodeRect.yMax, w, w);
+			}
+		}
 
 		/// <summary>
 		/// 下部连接点
 		/// </summary>
-		public Rect DownPlusRect =>
-			new Rect(NodeRect.center.x - BtConst.LinePlusLength / 2, NodeRect.yMax + 4,
-				BtConst.LinePlusLength, BtConst.LinePlusLength);
+		public Rect DownPlusRect
+		{
+			get
+			{
+				var w = BtConst.LinePlusLength * BtEditorWindow.Scale;
+				return new Rect(NodeRect.center.x - w / 2, NodeRect.yMax + 4, w, w);
+			}
+		}
 
 		/// <summary>
 		/// 上部连接点
 		/// </summary>
-		public Rect UpPointRect =>
-			new Rect(NodeRect.center.x - BtConst.LinePointLength / 2,
-				NodeRect.yMin - BtConst.LinePointLength,
-				BtConst.LinePointLength, BtConst.LinePointLength);
+		public Rect UpPointRect
+		{
+			get
+			{
+				var w = BtConst.LinePointLength * BtEditorWindow.Scale;
+				return new Rect(NodeRect.center.x - w / 2, NodeRect.yMin - w, w, w);
+			}
+		}
 
 		/// <summary>
 		/// 错误节点范围
 		/// </summary>
-		public Rect ErrorRect =>
-			new Rect(NodeRect.x + 5, NodeRect.y + 5,
-				BtConst.LinePointLength, BtConst.LinePointLength);
+		public Rect ErrorRect
+		{
+			get
+			{
+				var w = BtConst.LinePointLength * BtEditorWindow.Scale;
+				return new Rect(NodeRect.x + 5, NodeRect.y + 5, w, w);
+			}
+		}
 
 		/// <summary>
 		/// 左上显示区
 		/// </summary>
-		public Rect PosRect =>
-			new Rect(NodeRect.xMin + BtConst.DefaultSpacingX, NodeRect.yMin - BtConst.DefaultHeight / 2f,
-				BtConst.DefaultWidth, BtConst.DefaultHeight);
+		public Rect PosRect
+		{
+			get
+			{
+				var x = BtConst.DefaultSpacingX * BtEditorWindow.Scale;
+				var w = BtConst.DefaultWidth * BtEditorWindow.Scale;
+				var h = BtConst.DefaultHeight * BtEditorWindow.Scale;
+				return new Rect(NodeRect.xMin + x, NodeRect.yMin - h / 2f, w, h);
+			}
+		}
 
 
 		/// <summary>
 		/// 索引显示区
 		/// </summary>
-		public Rect IndexRect =>
-			new Rect(NodeRect.x - BtConst.LinePointLength / 2, NodeRect.y - 8,
-				BtConst.LinePointLength, BtConst.LinePointLength);
+		public Rect IndexRect
+		{
+			get
+			{
+				var w = BtConst.LinePointLength * BtEditorWindow.Scale;
+				return new Rect(NodeRect.x - w / 2, NodeRect.y - 8, w, w);
+			}
+		}
 
 		/// <summary>
 		/// 符合节点打断类型显示区
 		/// </summary>
-		public Rect AbortTypeRect =>
-			new Rect(NodeRect.xMin, NodeRect.yMin, BtConst.LinePointLength, BtConst.LinePointLength);
+		public Rect AbortTypeRect
+		{
+			get
+			{
+				var w = BtConst.LinePointLength * BtEditorWindow.Scale;
+				return new Rect(NodeRect.xMin, NodeRect.yMin, w, w);
+			}
+		}
 
 		/// <summary>
 		/// 启用节点显示区
 		/// </summary>
-		public Rect EnabledRect => new Rect(NodeRect.xMax - BtConst.ToggleLength + 2, NodeRect.yMin,
-			BtConst.ToggleLength, BtConst.ToggleLength);
+		public Rect EnabledRect
+		{
+			get
+			{
+				var w = BtConst.ToggleLength * BtEditorWindow.Scale;
+				return new Rect(NodeRect.xMax - w + 2, NodeRect.yMin, w, w);
+			}
+		}
 	}
 }

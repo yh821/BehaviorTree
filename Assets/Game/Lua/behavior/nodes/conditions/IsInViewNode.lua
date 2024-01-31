@@ -26,3 +26,7 @@ function IsInViewNode:Tick(delta_time)
     end
     return eNodeState.Failure
 end
+
+function IsInViewNode:Clear()
+    self.view_range_sqrt = nil
+end

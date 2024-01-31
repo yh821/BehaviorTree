@@ -284,11 +284,7 @@ namespace BT
 		public override TaskType Type => TaskType.Root;
 		public override GUIStyle NormalStyle => BtNodeStyle.RootStyle;
 		public override GUIStyle SelectStyle => BtNodeStyle.SelectRootStyle;
-
-		public Root(BtNode node) : base(node)
-		{
-		}
-
+		public Root(BtNode node) : base(node) { }
 		public override Texture GetIcon()
 		{
 			return BtNodeStyle.RootIcon;
@@ -298,65 +294,41 @@ namespace BT
 	public class Decorator : BtNodeType
 	{
 		public override TaskType Type => TaskType.Decorator;
-
 		public override int CanAddNodeCount => BtConst.NormalDecoratorCanAddNode;
-
 		public override GUIStyle NormalStyle => BtNodeStyle.DecoratorStyle;
 		public override GUIStyle SelectStyle => BtNodeStyle.SelectDecoratorStyle;
-
 		public override ErrorType IsValid => BelongNode.ChildNodeList.Count == 1 ? ErrorType.None : ErrorType.Error;
-
-		public Decorator(BtNode node) : base(node)
-		{
-		}
+		public Decorator(BtNode node) : base(node) { }
 	}
 
 	public class Composite : BtNodeType
 	{
 		public override TaskType Type => TaskType.Composite;
-
 		public override int CanAddNodeCount => BtConst.NormalCompositeCanAddNode;
-
 		public override GUIStyle NormalStyle => BtNodeStyle.CompositeStyle;
 		public override GUIStyle SelectStyle => BtNodeStyle.SelectCompositeStyle;
-
 		public override ErrorType IsValid => BelongNode.IsHaveChild ? ErrorType.None : ErrorType.Error;
-
-		public Composite(BtNode node) : base(node)
-		{
-		}
+		public Composite(BtNode node) : base(node) { }
 	}
 
 	public class Condition : BtNodeType
 	{
 		public override TaskType Type => TaskType.Condition;
-
 		public override int CanAddNodeCount => BtConst.NormalTaskCanAddNode;
-
 		public override GUIStyle NormalStyle => BtNodeStyle.ConditionStyle;
 		public override GUIStyle SelectStyle => BtNodeStyle.SelectConditionStyle;
-
 		public override ErrorType IsValid => ErrorType.None;
-
-		public Condition(BtNode node) : base(node)
-		{
-		}
+		public Condition(BtNode node) : base(node) { }
 	}
 
 	public class Action : BtNodeType
 	{
 		public override TaskType Type => TaskType.Action;
-
 		public override int CanAddNodeCount => BtConst.NormalTaskCanAddNode;
-
 		public override GUIStyle NormalStyle => BtNodeStyle.ActionStyle;
 		public override GUIStyle SelectStyle => BtNodeStyle.SelectTaskStyle;
-
 		public override ErrorType IsValid => ErrorType.None;
-
-		public Action(BtNode node) : base(node)
-		{
-		}
+		public Action(BtNode node) : base(node) { }
 	}
 
 	#region CustomType
@@ -364,10 +336,7 @@ namespace BT
 	public class Selector : Composite
 	{
 		public override TaskType Type => TaskType.Selector;
-
-		public Selector(BtNode node) : base(node)
-		{
-		}
+		public Selector(BtNode node) : base(node) { }
 
 		public override Texture GetIcon()
 		{
@@ -378,10 +347,7 @@ namespace BT
 	public class Sequence : Composite
 	{
 		public override TaskType Type => TaskType.Sequence;
-
-		public Sequence(BtNode node) : base(node)
-		{
-		}
+		public Sequence(BtNode node) : base(node) { }
 
 		public override Texture GetIcon()
 		{
@@ -392,10 +358,7 @@ namespace BT
 	public class Parallel : Composite
 	{
 		public override TaskType Type => TaskType.Parallel;
-
-		public Parallel(BtNode node) : base(node)
-		{
-		}
+		public Parallel(BtNode node) : base(node) { }
 
 		public override Texture GetIcon()
 		{
@@ -406,19 +369,13 @@ namespace BT
 	public class TriggerNode : Decorator
 	{
 		public override TaskType Type => TaskType.Trigger;
-
-		public TriggerNode(BtNode node) : base(node)
-		{
-		}
+		public TriggerNode(BtNode node) : base(node) { }
 	}
 
 	public class IsTriggerNode : Condition
 	{
 		public override TaskType Type => TaskType.IsTrigger;
-
-		public IsTriggerNode(BtNode node) : base(node)
-		{
-		}
+		public IsTriggerNode(BtNode node) : base(node) { }
 	}
 
 	#endregion

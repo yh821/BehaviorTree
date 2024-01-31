@@ -16,6 +16,15 @@
     "name": "是否激活",
     "path": ""
   },
+  "SequenceNode": {
+    "name": "顺序节点"
+  },
+  "SelectorNode": {
+    "name": "选择节点"
+  },
+  "ParallelNode": {
+    "name": "并行节点"
+  },
   "InverterNode": {
     "name": "非"
   },

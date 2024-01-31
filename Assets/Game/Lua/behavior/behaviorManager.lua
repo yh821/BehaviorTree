@@ -8,6 +8,7 @@ require("behavior/BehaviorConfig")
 ---@class BehaviorManager
 BehaviorManager = {}
 
+local _json_file_map = {}
 local _node_file_map = {}
 ---@type BehaviorTree[]
 local _behavior_tree_map = {}
@@ -39,8 +40,9 @@ function BehaviorManager:DestroyAll()
         bt:DeleteMe()
     end
     _behavior_tree_map = {}
-
-    self:CleanGlobalVar()
+    _json_file_map = {}
+    _node_file_map = {}
+    _globalVariables = {}
 
     for _, pool in pairs(BehaviorManager._tree_pool_map) do
         for _, tree in ipairs(pool) do
@@ -63,17 +65,27 @@ end
 
 ---简单的池子
 BehaviorManager._node_pool_map = {}
+local function __GetNodePool(file)
+    local pool = BehaviorManager._node_pool_map[file]
+    if pool == nil then
+        pool = {}
+        BehaviorManager._node_pool_map[file] = pool
+    end
+    return pool
+end
+
 ---@param node TaskNode
 function BehaviorManager.RecycleNode(node)
-    node:Clear()
-    local class = node.file
-    local class_pool = BehaviorManager._node_pool_map[class]
-    if class_pool == nil then
-        class_pool = {}
-        BehaviorManager._node_pool_map[class] = class_pool
+    if not node then
+        return
     end
+    node._state = nil
+    node.parent = nil
+    node.owner = nil
+    node.data = nil
+    node:Clear()
     --TODO 考虑池子上限
-    table.insert(class_pool, node)
+    table.insert(__GetNodePool(node.file), node)
 end
 
 ---@param file string
@@ -81,34 +93,38 @@ end
 ---@param tree BehaviorTree
 ---@return TaskNode
 function BehaviorManager.CreateNode(file, data, parent, tree)
-    local class_pool = BehaviorManager._node_pool_map[file]
-    if class_pool == nil or #class_pool == 0 then
-        ---@type TaskNode
+    ---@type TaskNode
+    local node = table.remove(__GetNodePool(file))
+    if node then
+        node:Awake(file, data, parent, tree)
+    else
         local class = _G[file]
         if class then
-            return class.New(file, data, parent, tree)
+            node = class.New(file, data, parent, tree)
         end
-    else
-        ---@type TaskNode
-        local node = table.remove(class_pool)
-        node:__Awake(file, data, parent, tree)
-        return node
     end
+    return node
 end
 
 ---简单的池子
 BehaviorManager._tree_pool_map = {}
+local function __GetTreePool(file)
+    local pool = BehaviorManager._tree_pool_map[file]
+    if pool == nil then
+        pool = {}
+        BehaviorManager._tree_pool_map[file] = pool
+    end
+    return pool
+end
+
 ---@param tree BehaviorTree
 function BehaviorManager.RecycleTree(tree)
-    tree:Clear()
-    local class = tree.file
-    local class_pool = BehaviorManager._tree_pool_map[class]
-    if class_pool == nil then
-        class_pool = {}
-        BehaviorManager._tree_pool_map[class] = class_pool
+    if not tree then
+        return
     end
+    tree:Clear()
     --TODO 考虑池子上限
-    table.insert(class_pool, tree)
+    table.insert(__GetTreePool(tree.file), tree)
 end
 
 ---@type fun(json:table, parent:TaskNode, tree:BehaviorTree)
@@ -129,7 +145,6 @@ __GenBehaviorTree = function(json, parent, tree)
     end
 end
 
-local _json_file_map = {}
 ---@param file string
 function BehaviorManager:CreateTree(file)
     local json = _json_file_map[file]
@@ -141,13 +156,11 @@ function BehaviorManager:CreateTree(file)
         _json_file_map[file] = json
     end
     ---@type BehaviorTree
-    local bt
-    local class_pool = BehaviorManager._tree_pool_map[file]
-    if class_pool == nil or #class_pool == 0 then
-        bt = BehaviorTree.New(json.data, file)
-    else
-        bt = table.remove(class_pool)
+    local bt = table.remove(__GetTreePool(file))
+    if bt then
         bt:Awake()
+    else
+        bt = BehaviorTree.New(json.data, file)
     end
     __GenBehaviorTree(json.children[1], bt, bt)
     if json.sharedData then

@@ -56,3 +56,7 @@ function AttackNode:GetDrawObj()
         return scene_obj:GetDrawObj()
     end
 end
+
+function AttackNode:Clear()
+    self.draw_obj = nil
+end
