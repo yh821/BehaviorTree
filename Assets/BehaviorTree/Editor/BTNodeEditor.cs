@@ -36,6 +36,8 @@ namespace BT
 		/// </summary>
 		public static Vector2 Position { get; set; } = Vector2.zero;
 
+		public static GUIStyle LabelStyle { get; } = new GUIStyle("flow node 3");
+		private const int DefaultFontSize = 12;
 		private static float mScale = 1f;
 
 		public static float Scale
@@ -45,7 +47,11 @@ namespace BT
 			{
 				if (value > 1f) mScale = 1f;
 				else if (value < 0.5f) mScale = 0.5f;
-				else mScale = value;
+				else
+				{
+					mScale = value;
+					LabelStyle.fontSize = Mathf.RoundToInt(DefaultFontSize * mScale);
+				}
 			}
 		}
 
@@ -843,7 +849,6 @@ namespace BT
 			GUIStyle style;
 			if (Data.enabled) style = IsSelected ? NodeType.SelectStyle : NodeType.NormalStyle;
 			else style = IsSelected ? BtNodeStyle.SelectRootStyle : BtNodeStyle.RootStyle;
-			style.fontSize = Mathf.RoundToInt(style.fontSize * BtEditorWindow.Scale);
 			var showLabel = Data.name;
 			if (!BtEditorWindow.IsDebug) showLabel = $"\n{showLabel}";
 			else
@@ -866,13 +871,10 @@ namespace BT
 				}
 			}
 
+			GUI.Box(Graph.NodeRect, "", style);
 			var icon = NodeType.GetIcon();
-			if (icon == null) GUI.Label(Graph.NodeRect, showLabel, style);
-			else
-			{
-				GUI.Label(Graph.NodeRect, "", style);
-				GUI.DrawTexture(Graph.IconRect, icon);
-			}
+			if (icon == null) GUI.Label(Graph.NodeRect, showLabel, BtEditorWindow.LabelStyle);
+			else GUI.DrawTexture(Graph.IconRect, icon);
 
 			if (NodeType.Type == TaskType.Selector || NodeType.Type == TaskType.Sequence)
 			{
@@ -1001,7 +1003,7 @@ namespace BT
 				var y = curEvent.delta.y;
 				if (y != 0)
 				{
-					BtEditorWindow.Scale = BtEditorWindow.Scale += y / 100f;
+					BtEditorWindow.Scale = BtEditorWindow.Scale -= y / 100f;
 					curEvent.Use();
 				}
 			}
@@ -1264,9 +1266,10 @@ namespace BT
 		{
 			get
 			{
-				var x = BtConst.DefaultSpacingX * BtEditorWindow.Scale;
-				var w = BtConst.DefaultWidth * BtEditorWindow.Scale;
-				var h = BtConst.DefaultHeight * BtEditorWindow.Scale;
+				var scale = BtEditorWindow.Scale;
+				var x = BtConst.DefaultSpacingX * scale;
+				var w = BtConst.DefaultWidth * scale;
+				var h = BtConst.DefaultHeight * scale;
 				return new Rect(NodeRect.xMin + x, NodeRect.yMin - h / 2f, w, h);
 			}
 		}
