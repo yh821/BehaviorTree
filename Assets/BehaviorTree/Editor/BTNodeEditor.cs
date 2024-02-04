@@ -921,7 +921,7 @@ namespace BT
 			//拖拽
 			else if (curEvent.type == EventType.MouseDrag && curEvent.button == 0)
 			{
-				if (Graph.NodeRect.Contains(curEvent.mousePosition) && mCanDragMove)
+				if (mIsDragging || Graph.NodeRect.Contains(curEvent.mousePosition) && mCanDragMove)
 				{
 					curEvent.Use();
 					mIsDragging = true;
@@ -930,7 +930,7 @@ namespace BT
 					var scale = BtEditorWindow.Scale;
 					var delta = BtEditorWindow.IsLockAxisY
 						? new Vector2(curEvent.delta.x / scale, 0)
-						: curEvent.delta * scale;
+						: curEvent.delta / scale;
 					UpdateNodePosition(this, delta);
 				}
 			}
