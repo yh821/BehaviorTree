@@ -57,5 +57,33 @@
     "name": "检查状态",
     "triggerType": "0",
     "triggerValue": "0"
+  },
+  "composites": {
+    "name": "复合节点"
+  },
+  "conditions": {
+    "name": "条件节点"
+  },
+  "decorators": {
+    "name": "修饰节点"
+  },
+  "actions": {
+    "name": "行为节点"
+  },
+  "common": {
+    "name": "通用"
+  },
+  "ParallelSelectorNode": {
+    "name": "并行选择"
+  },
+  "FailureNode": {
+    "name": "假"
+  },
+  "SuccessNode": {
+    "name": "真"
+  },
+  "SpeakNode": {
+    "name": "聊天气泡",
+    "msg": ""
   }
 }

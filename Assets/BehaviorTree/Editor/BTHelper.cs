@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
+using Common;
 using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
@@ -76,12 +78,23 @@ namespace BT
 			return Guid.NewGuid().ToString("N");
 		}
 
+		public static void CreateFolder(string path)
+		{
+			if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+		}
+
+		public static void SaveFile(string path, string content)
+		{
+			CreateFolder(Path.GetDirectoryName(path));
+			File.WriteAllText(path, content);
+		}
+
 		public static void SaveBtData(BehaviourTree tree)
 		{
 			if (tree == null) return;
 			FlushNodeData(tree.Root);
 			var content = JsonConvert.SerializeObject(tree.Root.Data, Formatting.Indented);
-			File.WriteAllText(Path.Combine(JsonPath, $"{tree.Name}.json"), content);
+			SaveFile(Path.Combine(JsonPath, $"{tree.Name}.json"), content);
 
 			var luaData = SwitchToLua(tree.Root.Data);
 			content = JsonConvert.SerializeObject(luaData, Formatting.Indented);
@@ -124,7 +137,7 @@ namespace BT
 			}
 
 			content = $"local __bt__ = {content}\nreturn __bt__";
-			File.WriteAllText(Path.Combine(BehaviorPath, $"{tree.Name}.lua"), content);
+			SaveFile(Path.Combine(BehaviorPath, $"{tree.Name}.lua"), content);
 		}
 
 		public static void FlushNodeData(BtNode node)
@@ -313,6 +326,26 @@ namespace BT
 			}
 		}
 
+		public static string TranslateWord(string orgWord)
+		{
+			if (NodeOptions.TryGetValue(orgWord, out var option))
+				return option.TryGetValue("name", out var scrWord) ? scrWord : orgWord;
+			return orgWord;
+		}
+
+		public static string Translate(string orgText)
+		{
+			if (!orgText.Contains('/')) return TranslateWord(orgText);
+			var sb = new StringBuilder();
+			var words = orgText.Split('/');
+			foreach (var word in words)
+			{
+				if (sb.Length == 0) sb.Append(TranslateWord(word));
+				else sb.Append('/').Append(TranslateWord(word));
+			}
+			return sb.ToString();
+		}
+
 		public static BtNodeType CreateNodeType(BtNode node)
 		{
 			var key = node.NodeName;
@@ -321,25 +354,16 @@ namespace BT
 			if (NodeTypeDict.ContainsKey(key))
 			{
 				var type = NodeTypeDict[key];
-				if (type.StartsWith("composites/SelectorNode"))
-					return new Selector(node);
-				if (type.StartsWith("composites/SequenceNode"))
-					return new Sequence(node);
-				if (type.StartsWith("composites/ParallelNode"))
-					return new Parallel(node);
-				if (type.StartsWith("conditions/IsTriggerNode"))
-					return new IsTriggerNode(node);
-				if (type.StartsWith("decorators/TriggerNode"))
-					return new TriggerNode(node);
+				if (type.StartsWith("composites/SelectorNode")) return new Selector(node);
+				if (type.StartsWith("composites/SequenceNode")) return new Sequence(node);
+				if (type.StartsWith("composites/ParallelNode")) return new Parallel(node);
+				if (type.StartsWith("conditions/IsTriggerNode")) return new IsTriggerNode(node);
+				if (type.StartsWith("decorators/TriggerNode")) return new TriggerNode(node);
 
-				if (type.StartsWith("actions/"))
-					return new Action(node);
-				if (type.StartsWith("composites/"))
-					return new Composite(node);
-				if (type.StartsWith("conditions/"))
-					return new Condition(node);
-				if (type.StartsWith("decorators/"))
-					return new Decorator(node);
+				if (type.StartsWith("actions/")) return new Action(node);
+				if (type.StartsWith("composites/")) return new Composite(node);
+				if (type.StartsWith("conditions/")) return new Condition(node);
+				if (type.StartsWith("decorators/")) return new Decorator(node);
 			}
 
 			throw new ArgumentNullException(node.NodeName, "找不到该节点");
@@ -353,21 +377,21 @@ namespace BT
 				foreach (var kv in NodeTypeDict)
 				{
 					//var data = kv.Key.Replace("Node", "")
-					menu.AddItem(new GUIContent(kv.Value), false, callback, kv.Key);
+					menu.AddItem(new GUIContent(Translate(kv.Value)), false, callback, kv.Key);
 				}
 
 				if (BtEditorWindow.CopyNode != null)
 				{
 					menu.AddSeparator("");
-					menu.AddItem(new GUIContent("Paste Node"), false, callback, "Paste");
+					menu.AddItem(new GUIContent("粘贴节点"), false, callback, "Paste");
 				}
 			}
 
 			if (!node.IsRoot)
 			{
 				menu.AddSeparator("");
-				menu.AddItem(new GUIContent("Copy Node"), false, callback, "Copy");
-				menu.AddItem(new GUIContent("Delete Node"), false, callback, "Delete");
+				menu.AddItem(new GUIContent("复制节点"), false, callback, "Copy");
+				menu.AddItem(new GUIContent("删除节点"), false, callback, "Delete");
 			}
 
 			return menu;

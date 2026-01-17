@@ -89,19 +89,13 @@ namespace BT
 		public const float IconSize = 40;
 
 		/// <summary>
-		/// 左侧监视面板宽度
+		/// 监视面板宽高
 		/// </summary>
 		public const float InspectWidth = 240;
-
-		/// <summary>
-		/// 左侧监视面板高度
-		/// </summary>
 		public const float NodeInspectHeight = 300;
-
-		/// <summary>
-		/// 左侧监视面板高度
-		/// </summary>
 		public const float TreeInspectHeight = 440;
+		public const float DebugInspectWidth = 130;
+		public const float DebugInspectHeight = 44;
 
 		/// <summary>
 		/// 节点默认宽度

@@ -101,12 +101,12 @@ namespace BT
 
 		private Rect mNodeInspectorRect;
 		private Rect mTreeInspectorRect;
+		private Rect mDebugInspectorRect;
 
 		public void Initialize()
 		{
 			PLUS_ICON = EditorGUIUtility.IconContent("Toolbar Plus");
 			MINUS_ICON = EditorGUIUtility.IconContent("Toolbar Minus");
-			defaultLabelWidth = EditorGUIUtility.labelWidth;
 
 			if (CurBehaviourTree == null) CurBehaviourTree = new BehaviourTree(this);
 			if (mBtGrid == null) mBtGrid = new BtGrid();
@@ -138,13 +138,16 @@ namespace BT
 
 				BeginWindows();
 				{
-					mNodeInspectorRect = new Rect(position.width - BtConst.InspectWidth, 0,
-						BtConst.InspectWidth, BtConst.NodeInspectHeight);
-					GUILayout.Window(0, mNodeInspectorRect, NodeInspectorWindow, "Node Inspector");
+					mTreeInspectorRect = new Rect(position.width - BtConst.InspectWidth, 0, BtConst.InspectWidth,
+						BtConst.TreeInspectHeight);
+					GUILayout.Window(0, mTreeInspectorRect, TreeInspectorWindow, "Tree Inspector");
 
-					mTreeInspectorRect = new Rect(position.width - BtConst.InspectWidth, BtConst.NodeInspectHeight,
-						BtConst.InspectWidth, BtConst.TreeInspectHeight);
-					GUILayout.Window(1, mTreeInspectorRect, TreeInspectorWindow, "Tree Inspector");
+					mNodeInspectorRect = new Rect(position.width - BtConst.InspectWidth, BtConst.TreeInspectHeight,
+						BtConst.InspectWidth, BtConst.NodeInspectHeight);
+					GUILayout.Window(1, mNodeInspectorRect, NodeInspectorWindow, "Node Inspector");
+
+					mDebugInspectorRect = new Rect(0, 0, BtConst.DebugInspectWidth, BtConst.DebugInspectHeight);
+					GUILayout.Window(2, mDebugInspectorRect, DebugInspectorWindow, "Debug Inspector");
 				}
 				EndWindows();
 			}
@@ -210,12 +213,11 @@ namespace BT
 
 		private static readonly string[] TAB =
 		{
-			"Behaviour Tree",
-			"Common Option",
+			"行为树信息",
+			"节点配置",
 		};
 
 		private int Tab { get; set; }
-		private float defaultLabelWidth;
 
 		private int mCurSelectJson = 0;
 		private int mLastSelectJson = 0;
@@ -246,6 +248,11 @@ namespace BT
 			DrawNodeInspector();
 		}
 
+		private void DebugInspectorWindow(int winId)
+		{
+			DrawDebugInspector();
+		}
+
 		private void TreeInspectorWindow(int winId)
 		{
 			Tab = GUILayout.Toolbar(Tab, TAB);
@@ -262,20 +269,20 @@ namespace BT
 			}
 		}
 
-		private void DrawTreeInspector()
+		private void DrawDebugInspector()
 		{
 			EditorGUILayout.BeginHorizontal();
-			{
-				IsDebug = GUILayout.Toggle(IsDebug, "调试");
-				// GUI.enabled = IsDebug;
-				IsAutoAlign = GUILayout.Toggle(IsAutoAlign, "自动对齐");
-				IsShowPos = GUILayout.Toggle(IsShowPos, "坐标");
-				IsShowIndex = GUILayout.Toggle(IsShowIndex, "序号");
-				// IsLockAxisY = GUILayout.Toggle(IsLockAxisY, "锁定Y轴");
-				// GUI.enabled = true;
-			}
+			IsDebug = GUILayout.Toggle(IsDebug, "调试");
+			IsAutoAlign = GUILayout.Toggle(IsAutoAlign, "自动对齐");
+			IsShowPos = IsDebug; //GUILayout.Toggle(IsShowPos, "坐标");
+			IsShowIndex = IsDebug; //GUILayout.Toggle(IsShowIndex, "序号");
+			// IsLockAxisY = GUILayout.Toggle(IsLockAxisY, "锁定Y轴");
 			EditorGUILayout.EndHorizontal();
+		}
 
+		private void DrawTreeInspector()
+		{
+			// DrawDebugInspector();
 			EditorGUILayout.BeginVertical("Box");
 			{
 				EditorGUILayout.LabelField("当前行为树");
@@ -455,8 +462,15 @@ namespace BT
 
 		private void LoadBehaviorTree()
 		{
+			var dir = BtHelper.JsonPath + "/";
+			var allShowJson = new List<string>();
 			var files = Directory.GetFiles(BtHelper.JsonPath, "*.json", SearchOption.AllDirectories);
-			mAllShowJson = files.Select(Path.GetFileNameWithoutExtension).ToArray();
+			foreach (var file in files)
+			{
+				var path = file.Substring(0, file.Length - 5);
+				allShowJson.Add(path.Replace('\\', '/').Replace(dir, ""));
+			}
+			mAllShowJson = allShowJson.ToArray();
 			if (mCurSelectJson >= mAllShowJson.Length)
 				mCurSelectJson = mAllShowJson.Length - 1;
 			mLastSelectJson = -1;
@@ -1086,6 +1100,8 @@ namespace BT
 		public Dictionary<string, int> NodePosDict;
 
 		public string Name { get; set; }
+
+		public string File { get; set; }
 
 		public BtNode Root { get; }
 
